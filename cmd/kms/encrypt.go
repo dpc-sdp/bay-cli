@@ -12,7 +12,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func Encrpyt(c *cli.Context) error {
+func Encrypt(c *cli.Context) error {
 	inputContents, err := io.ReadAll(c.App.Reader)
 	if err != nil {
 		return errors.Wrap(err, "unable to read input")

@@ -35,7 +35,7 @@ func main() {
 								Required: true,
 							},
 						},
-						Action: kms.Encrpyt,
+						Action: kms.Encrypt,
 					},
 				},
 			},
