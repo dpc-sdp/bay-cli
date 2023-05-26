@@ -22,11 +22,3 @@ This will store the encrypted file at `keys/production/oauth.pem.asc`.
 bay kms decrypt keys/production/oauth.pem.asc
 ```
 This decrypts the file to same path without the `.asc` extension.
-
-```
-bay deplop decrypt
-```
-
-```
-bay deploy 
-```
