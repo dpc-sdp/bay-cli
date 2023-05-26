@@ -34,15 +34,6 @@ func main() {
 								Usage:    "Name of key",
 								Required: true,
 							},
-							&cli.StringFlag{
-								Name:     "input",
-								Usage:    "Filepath to input file, use '-' for stdin",
-								Required: true,
-							},
-							&cli.StringFlag{
-								Name:  "filename",
-								Usage: "Filename of output file",
-							},
 						},
 						Action: kms.Encrpyt,
 					},

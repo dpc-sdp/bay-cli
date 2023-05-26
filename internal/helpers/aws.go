@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"errors"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/aws/aws-sdk-go-v2/service/kms/types"
@@ -43,7 +44,7 @@ func AwsKmsListEnabledCustomerKeys() []types.KeyListEntry {
 }
 
 // Returns a KMS key ID by tags.
-func AwsKmsGetKeyIdByTag(selectors map[string]string) *string {
+func AwsKmsGetKeyIdByTag(selectors map[string]string) (*string, error) {
 	client := AwsKmsClient()
 	keys := AwsKmsListEnabledCustomerKeys()
 	for _, key := range keys {
@@ -52,15 +53,15 @@ func AwsKmsGetKeyIdByTag(selectors map[string]string) *string {
 		}
 		tagsOnKey, err := client.ListResourceTags(context.TODO(), in)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 		for _, tag := range tagsOnKey.Tags {
 			for tagKey, tagValue := range selectors {
 				if tagKey == strings.ToLower(*tag.TagKey) && tagValue == strings.ToLower(*tag.TagValue) {
-					return key.KeyId
+					return key.KeyId, nil
 				}
 			}
 		}
 	}
-	return nil
+	return nil, errors.New("unable to find requested kms key")
 }

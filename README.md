@@ -11,10 +11,22 @@ These commands simplify common cryptographic processes.
 *Encrypt secrets to store in the project codebase.
 ```
 # If piping stdout from another command, use "-" as the input .
-bay kms encrypt \   
+cat /tmp/oauth.pem | bay kms encrypt \   
     --project content-foo-vic-gov-au \
-    --key production \
-    --input path/to/original.txt \
-    --filename original.txt
+    --key production > /keys/production/oauth.pem.asc
 ```
-This will store the encrypted file at `keys/production/original.txt.asc`, which will be decrypted to the same path without the `.asc` extension.
+This will store the encrypted file at `keys/production/oauth.pem.asc`.
+
+*Decrypt secrets stored in the codebase with this tool*
+```
+bay kms decrypt keys/production/oauth.pem.asc
+```
+This decrypts the file to same path without the `.asc` extension.
+
+```
+bay deplop decrypt
+```
+
+```
+bay deploy 
+```
