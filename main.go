@@ -9,20 +9,17 @@ import (
 
 func main() {
 	app := &cli.App{
-		//Name:  "bay",
-		//Usage: "CLI tool to interact with the Bay container platform",
-		//Action: func(*cli.Context) error {
-		//	fmt.Println("boom! I say!")
-		//	return nil
-		//},
+		Name:  "bay",
+		Usage: "CLI tool to interact with the Bay container platform",
 		Commands: []*cli.Command{
 			{
 				Name:  "kms",
-				Usage: "Colllection of commands to interact with KMS encryption service",
+				Usage: "interact with KMS encryption service",
 				Subcommands: []*cli.Command{
 					{
-						Name:  "encrypt",
-						Usage: "encrypt a file",
+						Name:      "encrypt",
+						Usage:     "encrypt data",
+						UsageText: "cat file.pem | bay kms encrypt > file.pem.asc",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
 								Name:     "project",
@@ -36,6 +33,12 @@ func main() {
 							},
 						},
 						Action: kms.Encrypt,
+					},
+					{
+						Name:      "decrypt",
+						Usage:     "decrypt a file",
+						UsageText: "cat file.pem.asc | bay kms decrypt > file.pem",
+						Action:    kms.Decrypt,
 					},
 				},
 			},
