@@ -5,6 +5,8 @@ import (
 	b64 "encoding/base64"
 	"fmt"
 	"io"
+	"log"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/dpc-sdp/bay-cli/internal/helpers"
@@ -13,6 +15,8 @@ import (
 )
 
 func Encrypt(c *cli.Context) error {
+	logger := log.New(c.App.ErrWriter, "", log.LstdFlags)
+
 	inputContents, err := io.ReadAll(c.App.Reader)
 	if err != nil {
 		return errors.Wrap(err, "unable to read input")
@@ -27,21 +31,21 @@ func Encrypt(c *cli.Context) error {
 		return errors.New("file exceeds maximum filesize - we plan to support files greater than 4KB in the future")
 	}
 
-	keyId, err := helpers.AwsKmsGetKeyIdByTag(map[string]string{
-		"project": c.String("project"),
-		"key":     c.String("key"),
-	})
-	if err != nil {
-		return err
-	}
+	alias := helpers.BuildKmsAlias(c.String("project"), c.String("key"))
+	logger.Printf("encrypting with key %s", alias)
 
 	client := helpers.AwsKmsClient()
 	in := &kms.EncryptInput{
-		KeyId:     keyId,
+		KeyId:     &alias,
 		Plaintext: inputContents,
 	}
 	out, err := client.Encrypt(context.TODO(), in)
 	if err != nil {
+		errorMessage := err.Error()
+		if strings.Contains(errorMessage, "NotFoundException") {
+			return errors.Errorf("no KMS key alias found for \"%s\", check the --key flag is correct", alias)
+		}
+
 		return errors.Wrap(err, "error encrypting payload with key")
 	}
 
