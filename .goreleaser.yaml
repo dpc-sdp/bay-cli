@@ -13,6 +13,10 @@ builds:
     goos:
       - linux
       - darwin
+release:
+  github:
+    owner: dpc-sdp
+    name: homebrew-bay-cli
 
 archives:
   - format: tar.gz
