@@ -3,7 +3,6 @@ package kms
 import (
 	"context"
 	b64 "encoding/base64"
-	"fmt"
 	"io"
 
 	"github.com/aws/aws-sdk-go-v2/service/kms"
@@ -40,6 +39,6 @@ func Decrypt(c *cli.Context) error {
 		return errors.Wrap(err, "error decrypting payload")
 	}
 
-	fmt.Fprintf(c.App.Writer, string(out.Plaintext))
+	io.WriteString(c.App.Writer, string(out.Plaintext))
 	return nil
 }
