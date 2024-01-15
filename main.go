@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/dpc-sdp/bay-cli/cmd/kms"
+	project_map "github.com/dpc-sdp/bay-cli/cmd/project-map"
 	cli "github.com/urfave/cli/v2"
 	"log"
 	"os"
@@ -39,6 +40,24 @@ func main() {
 						Usage:     "decrypt a file",
 						UsageText: "cat file.pem.asc | bay kms decrypt > file.pem",
 						Action:    kms.Decrypt,
+					},
+				},
+			},
+			{
+				Name:  "project-map",
+				Usage: "commands to show relationships between projects",
+				Subcommands: []*cli.Command{
+					{
+						Name:      "by-backend",
+						Usage:     "shows all frontends that connect to a specific backend",
+						UsageText: "bay project-map by-backend --all",
+						Flags: []cli.Flag{
+							&cli.BoolFlag{
+								Name:  "all",
+								Usage: "List all projects",
+							},
+						},
+						Action: project_map.ByBackend,
 					},
 				},
 			},
