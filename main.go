@@ -59,6 +59,18 @@ func main() {
 						},
 						Action: project_map.ByBackend,
 					},
+					{
+						Name:      "by-frontend",
+						Usage:     "shows the backend that a list of frontends connect to",
+						UsageText: "bay project-map by-frontend --all",
+						Flags: []cli.Flag{
+							&cli.BoolFlag{
+								Name:  "all",
+								Usage: "List all projects",
+							},
+						},
+						Action: project_map.ByFrontend,
+					},
 				},
 			},
 		},

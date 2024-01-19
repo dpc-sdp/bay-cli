@@ -26,7 +26,21 @@ func ByBackend(c *cli.Context) error {
 
 	output := ByBackendResponse{}
 
-	args := helpers.GetAllArgs(c)
+	all := c.Bool("all")
+	args := make([]string, 0)
+	if all {
+		projects := make([]schema.ProjectMetadata, 0)
+		err = client.ProjectsByMetadata(c.Context, "type", "tide", &projects)
+		if err != nil {
+			return err
+		}
+		for _, p := range projects {
+			args = append(args, p.Name)
+		}
+	} else {
+		args = helpers.GetAllArgs(c)
+	}
+
 	for _, v := range args {
 		project := &schema.ProjectMetadata{}
 		err := client.ProjectByNameMetadata(c.Context, v, project)
