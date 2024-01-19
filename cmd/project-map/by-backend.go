@@ -3,10 +3,10 @@ package project_map
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/urfave/cli/v2"
-	"github.com/uselagoon/machinery/api/schema"
 
 	"github.com/dpc-sdp/bay-cli/internal/helpers"
+	"github.com/urfave/cli/v2"
+	"github.com/uselagoon/machinery/api/schema"
 )
 
 type ByBackendResponse struct {
