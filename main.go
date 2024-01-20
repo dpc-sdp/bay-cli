@@ -5,8 +5,9 @@ import (
 	"os"
 
 	"github.com/dpc-sdp/bay-cli/cmd/kms"
-	project_map "github.com/dpc-sdp/bay-cli/cmd/project-map"
 	cli "github.com/urfave/cli/v2"
+
+	project_map "github.com/dpc-sdp/bay-cli/cmd/project-map"
 )
 
 func main() {
