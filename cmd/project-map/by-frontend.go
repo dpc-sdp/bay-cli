@@ -3,7 +3,7 @@ package project_map
 import (
 	"encoding/json"
 	"fmt"
-
+	"github.com/alexeyco/simpletable"
 	"github.com/urfave/cli/v2"
 	"github.com/uselagoon/machinery/api/schema"
 
@@ -63,9 +63,29 @@ func ByFrontend(c *cli.Context) error {
 		output.Items[v] = project.Metadata["backend-project"]
 	}
 
-	a, _ := json.Marshal(output)
+	if c.String("output") == "json" {
+		a, _ := json.Marshal(output)
+		fmt.Fprintf(c.App.Writer, string(a))
+	} else {
+		table := simpletable.New()
 
-	fmt.Fprintf(c.App.Writer, string(a))
+		table.Header = &simpletable.Header{
+			Cells: []*simpletable.Cell{
+				{Align: simpletable.AlignLeft, Text: "Frontend"},
+				{Align: simpletable.AlignLeft, Text: "Backend"},
+			},
+		}
+
+		for frontend, backend := range output.Items {
+			r := []*simpletable.Cell{
+				{Text: frontend},
+				{Text: backend},
+			}
+			table.Body.Cells = append(table.Body.Cells, r)
+		}
+		table.SetStyle(simpletable.StyleCompactLite)
+		fmt.Fprintf(c.App.Writer, table.String())
+	}
 
 	return nil
 }
