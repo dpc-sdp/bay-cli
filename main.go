@@ -60,7 +60,7 @@ func main() {
 							},
 							&cli.StringFlag{
 								Name:        "output",
-								Usage:       "Output format",
+								Usage:       "Output format - supports json, table",
 								DefaultText: "table",
 							},
 						},
@@ -77,7 +77,7 @@ func main() {
 							},
 							&cli.StringFlag{
 								Name:        "output",
-								Usage:       "Output format",
+								Usage:       "Output format - supports json, table",
 								DefaultText: "table",
 							},
 						},
