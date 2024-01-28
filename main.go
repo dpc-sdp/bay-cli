@@ -58,6 +58,11 @@ func main() {
 								Name:  "all",
 								Usage: "List all projects",
 							},
+							&cli.StringFlag{
+								Name:        "output",
+								Usage:       "Output format",
+								DefaultText: "table",
+							},
 						},
 						Action: project_map.ByBackend,
 					},
@@ -69,6 +74,11 @@ func main() {
 							&cli.BoolFlag{
 								Name:  "all",
 								Usage: "List all projects",
+							},
+							&cli.StringFlag{
+								Name:        "output",
+								Usage:       "Output format",
+								DefaultText: "table",
 							},
 						},
 						Action: project_map.ByFrontend,
