@@ -14,9 +14,14 @@ builds:
       - linux
       - darwin
 release:
-  github:
-    owner: dpc-sdp
-    name: homebrew-bay-cli
+  header: |
+    ## Bay CLI (v{{.Version}})
+    ### Installation via Brew
+    The preferred method is installation via [Homebrew](https://brew.sh/).
+    ```
+    brew tap dpc-sdp/bay-cli
+    brew install bay-cli
+    ```
 
 archives:
   - format: tar.gz
@@ -41,95 +46,23 @@ changelog:
 
 # .goreleaser.yaml
 brews:
-  -
-    # Name of the recipe
-    #
-    # Default: ProjectName
-    # Templates: allowed
-    name: bay-cli
-
-    # IDs of the archives to use.
-    # Empty means all IDs.
+  - name: bay-cli
+    tap:
+      owner: dpc-sdp
+      name: homebrew-bay-cli
+    homepage: "https://github.com/dpc-sdp/bay-cli"
     ids: []
-
-    # GOARM to specify which 32-bit arm version to use if there are multiple
-    # versions from the build section. Brew formulas support only one 32-bit
-    # version.
-    #
-    # Default: 6
     goarm: 6
-
-    # GOAMD64 to specify which amd64 version to use if there are multiple
-    # versions from the build section.
-    #
-    # Default: v1
     goamd64: v1
-
-    # NOTE: make sure the url_template, the token and given repo (github or
-    # gitlab) owner and name are from the same kind.
-    # We will probably unify this in the next major version like it is
-    # done with scoop.
-
-    # URL which is determined by the given Token (github, gitlab or gitea).
-    #
-    # Default depends on the client.
-    # Templates: allowed
-
-    # Git author used to commit to the repository.
     commit_author:
       name: SDP Deploy
       email: de.ops@dpc.vic.gov.au
-
-    # The project name and current git tag are used in the format string.
-    #
-    # Templates: allowed
     commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
+    description: "CLI tool to interact with the Bay container platform"
 
     # Folder inside the repository to put the formula.
     folder: Formula
 
-    # Caveats for the user of your binary.
-    caveats: "How to use this binary"
-
-    # Your app's homepage.
-    homepage: "https://github.com/dpc-sdp/bay-cli"
-
-    # Your app's description.
-    #
-    # Templates: allowed
-    description: "CLI tool to interact with the Bay container platform"
-
     # SPDX identifier of your app's license.
     license: "MIT"
-
-    # Setting this will prevent goreleaser to actually try to commit the updated
-    # formula - instead, the formula file will be stored on the dist folder only,
-    # leaving the responsibility of publishing it to the user.
-    # If set to auto, the release will not be uploaded to the homebrew tap
-    # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
-    #
-    # Templates: allowed
     skip_upload: false
-
-    # Repository to push the generated files to.
-    repository:
-      # Repository owner.
-      #
-      # Templates: allowed
-      owner: dpc-sdp
-
-      # Repository name.
-      #
-      # Templates: allowed
-      name: homebrew-bay-cli
-
-      # Optionally a branch can be provided.
-      #
-      # Default: default repository branch
-      # Templates: allowed
-      branch: default
-
-# The lines beneath this are called `modelines`. See `:help modeline`
-# Feel free to remove those if you don't want/use them.
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# vim: set ts=2 sw=2 tw=0 fo=cnqoj
