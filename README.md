@@ -30,7 +30,7 @@ These commands provide a simple way to show how projects relate to eachother.
 ```sh
 bay project-map by-backend content-vic
 bay project-map by-backend content-health-vic-gov-au content-legalaid-vic-gov-au 
-bay project-map by-backend --all
+bay project-map by-backend --all --output=json
 ```
 
 *Show which backend a specific frontend connects to*
