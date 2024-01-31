@@ -1,0 +1,34 @@
+{{ $inventory := .Inventory }}
+<table class="confluenceTable">
+    <tbody>
+        <tr>
+            <th class="confluenceTh">
+                <p><strong>Backend</strong>
+            </th>
+            <th class="confluenceTh">
+                <strong>Frontends</strong>
+            </th>
+        </tr>
+        {{ range $index, $item := .Items }}
+        <tr>
+            <td class="confluenceTd">
+                {{ with (index $inventory $item.Project)}}
+                <li><a href="{{ .GitURL | convert_github_url_to_page }}">{{ .Name }}</a></li>
+                {{ end }}
+            </td>
+            <td class="confluenceTd">
+                <ul>
+                    {{ range $index2, $frontend := $item.FrontEnds }}
+                    {{ with (index $inventory $frontend)}}
+                    <li><a href="{{ .GitURL | convert_github_url_to_page }}">{{ $frontend }}</a></li>
+                    {{ end }}
+                    {{ end }}
+                </ul>
+            </td>
+        </tr>
+        {{ end }}
+    </tbody>
+</table>
+
+
+
