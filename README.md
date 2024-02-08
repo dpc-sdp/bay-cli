@@ -20,3 +20,16 @@ This will store the encrypted file at `keys/production/oauth.pem.asc`.
 ```
 cat oauth.pen.asc | bay kms decrypt > oauth.pem
 ```
+
+# Installation
+
+## Homebrew (OSX)
+
+```
+brew tap dpc-sdp/bay-cli
+brew install bay-cli
+```
+
+# Binaries
+
+Download the binaries for your OS / platform from the releases page - https://github.com/dpc-sdp/bay-cli/releases
