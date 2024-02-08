@@ -82,8 +82,13 @@ func main() {
 							},
 							&cli.StringFlag{
 								Name:        "output",
-								Usage:       "Output format - supports json, table",
+								Usage:       "Output format - supports json, table, go-template-file",
 								DefaultText: "table",
+							},
+							&cli.StringFlag{
+								Name:   "go-template-file",
+								Usage:  "Path on disk to go template file",
+								Hidden: true,
 							},
 						},
 						Action: project_map.ByFrontend,
