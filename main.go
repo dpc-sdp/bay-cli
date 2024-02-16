@@ -8,6 +8,8 @@ import (
 	cli "github.com/urfave/cli/v2"
 
 	project_map "github.com/dpc-sdp/bay-cli/cmd/project-map"
+	elastic_cloud "github.com/dpc-sdp/bay-cli/cmd/elastic-cloud"
+
 )
 
 func main() {
@@ -82,6 +84,18 @@ func main() {
 							},
 						},
 						Action: project_map.ByFrontend,
+					},
+				},
+			},
+			{
+				Name:  "elastic-cloud",
+				Usage: "commands to show Elastic Cloud deployment daat",
+				Subcommands: []*cli.Command{
+					{
+						Name:      "index-metadata",
+						Usage:     "shows metadata related to an index",
+						UsageText: "bay elastic-cloud index-metadata",
+						Action: elastic_cloud.GetIndex,
 					},
 				},
 			},
