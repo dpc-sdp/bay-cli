@@ -7,9 +7,8 @@ import (
 	"github.com/dpc-sdp/bay-cli/cmd/kms"
 	cli "github.com/urfave/cli/v2"
 
-	project_map "github.com/dpc-sdp/bay-cli/cmd/project-map"
 	elastic_cloud "github.com/dpc-sdp/bay-cli/cmd/elastic-cloud"
-
+	project_map "github.com/dpc-sdp/bay-cli/cmd/project-map"
 )
 
 func main() {
@@ -95,7 +94,13 @@ func main() {
 						Name:      "index-metadata",
 						Usage:     "shows metadata related to an index",
 						UsageText: "bay elastic-cloud index-metadata",
-						Action: elastic_cloud.GetIndex,
+						Action:    elastic_cloud.GetIndex,
+						Flags: []cli.Flag{
+							&cli.BoolFlag{
+								Name:  "dry-run",
+								Usage: "Do not execute any mutations",
+							},
+						},
 					},
 				},
 			},
