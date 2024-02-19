@@ -2,6 +2,7 @@ package elastic_cloud
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -20,7 +21,7 @@ type EsConfig struct {
 }
 
 type Indices struct {
-	Index string
+	Index map[string]interface{} `json:"Index"`
 }
 
 var setupLog = ctrl.Log.WithName("setup")
@@ -32,26 +33,30 @@ func GetIndex(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	// client, err := elasticsearch.NewClient(elasticsearch.Config{esConfig})
 	client, err := elasticsearch.NewClient(elasticsearch.Config{APIKey: config.ApiKey, CloudID: config.CloudId})
 
 	if err != nil {
 		return err
 	}
 
-	// settings, _ := esapi.ClusterGetSettingsRequest{Human: true, FilterPath: []string{"*.settings.index.creation_date_string"}}.Do(context.TODO(), client)
 	settings, _ := esapi.IndicesGetSettingsRequest{FilterPath: []string{"*.settings.index.creation_date"}}.Do(context.TODO(), client)
 
-	// h := []string{"index"}
-	// res, _ := esapi.CatIndicesRequest{Format: "JSON", H: []string{"index"}, S: []string{"index"}}.Do(context.TODO(), client)
-
-	// input := esapi.CatIndicesRequest{Format: "JSON"}
-
-	// indices, err := client.Cat.Indices(&input)
-
-	// indicesBody, _ := io.ReadAll(indices.Body)
-
 	fmt.Printf(settings.String())
+
+	var list Indices
+
+	jsonErr := json.Unmarshal([]byte(settings.String()), &list)
+
+	if jsonErr != nil {
+		fmt.Println("Error:", jsonErr)
+		return jsonErr
+	}
+
+	fmt.Printf("%+v\n", list)
+
+	// use struct to get JSON content
+
+	// filter indices by name `*--elasticsearch_index_*`
 
 	return nil
 }
