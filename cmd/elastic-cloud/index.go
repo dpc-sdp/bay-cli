@@ -16,8 +16,6 @@ import (
 
 	envconfig "github.com/sethvargo/go-envconfig"
 	ctrl "sigs.k8s.io/controller-runtime"
-
-	"github.com/dpc-sdp/bay-cli/internal/helpers"
 )
 
 // Config for Elasticsearch client
@@ -40,8 +38,7 @@ var setupLog = ctrl.Log.WithName("setup")
 
 func GetIndex(c *cli.Context) error {
 	dryRun := c.Bool("dry-run")
-	args := make([]string, 0)
-	args = helpers.GetAllArgs(c)
+	deleteList := make([]string, 0)
 
 	var config EsConfig
 	if err := envconfig.Process(context.Background(), &config); err != nil {
@@ -62,29 +59,34 @@ func GetIndex(c *cli.Context) error {
 	if err := json.NewDecoder(settings.Body).Decode(&list); err != nil {
 		log.Fatalf("Error parsing the response body: %s", err)
 	} else {
-		// filter list for indices by name `*--elasticsearch_index_*`
-		if dryRun {
-			fmt.Println("this is a dry-run")
-			fmt.Printf("%+v", args)
-		}
 		for k, i := range list {
 			if strings.Contains(k, "elasticsearch_index") {
 				now := time.Now().UnixMilli()
 				created, err := strconv.ParseInt(i.IndexItem.IndexDetail.CreationDate, 10, 64)
 				if err != nil {
-					panic(err)
+					return err
 				}
-
-				// for _, a := range args {
-				// }
 
 				diffInDays := (now - created) / (1000 * 60 * 60 * 24)
 				if diffInDays > 30 {
-					fmt.Printf("%+v - %+v diff is %v\n", k, i.IndexItem.IndexDetail.CreationDate, diffInDays)
+					fmt.Printf("The index %+v is %v days old and will be marked for deletion\n", k, diffInDays)
+					deleteList = append(deleteList, k)
 				}
 			}
 		}
+		if c := len(deleteList); c > 0 {
+			if !dryRun {
+				fmt.Println("Deleting indices marked for deletion.")
+				_, err := esapi.IndicesDeleteRequest{Index: deleteList}.Do(context.TODO(), client)
+				if err != nil {
+					return err
+				} else {
+					fmt.Printf("%+v indices successfully deleted.", c)
+				}
+			} else {
+				fmt.Printf("The 'dry-run' flag is set - no further action taken. There are %+v indices marked for deletion", c)
+			}
+		}
 	}
-
 	return nil
 }
