@@ -98,7 +98,7 @@ func main() {
 						Flags: []cli.Flag{
 							&cli.BoolFlag{
 								Name:  "force",
-								Usage: "Execute any mutations",
+								Usage: "skips all confirmation prompts and immediately executes mutations",
 							},
 							&cli.StringFlag{
 								Name:     "EC_API_KEY",
