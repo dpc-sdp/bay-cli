@@ -110,7 +110,7 @@ func deleteIndices(client *elasticsearch.Client, deleteList []string, c int) (in
 	if err != nil {
 		return res.StatusCode, err
 	} else {
-		if res.StatusCode == 200 {
+		if res.StatusCode != 200 {
 			fmt.Printf("Deletion request failed. Status code %+v", res.StatusCode)
 			return res.StatusCode, errors.New("non 200 status code")
 		} else {
