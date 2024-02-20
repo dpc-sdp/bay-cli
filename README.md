@@ -36,7 +36,7 @@ Commands for querying and interacting with the Elastic Cloud API.
 `delete-stale` Delete indices that are greater than 30 days old
 
 ```
-bay-cli elastic-cloud delete-stale
+bay elastic-cloud delete-stale
 ```
 
 # Installation
