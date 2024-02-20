@@ -3,6 +3,7 @@ package elastic_cloud
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"github.com/manifoldco/promptui"
 	"github.com/urfave/cli/v2"
 
 	envconfig "github.com/sethvargo/go-envconfig"
@@ -36,8 +38,8 @@ type Indices map[string]IndexSettings
 
 var setupLog = ctrl.Log.WithName("setup")
 
-func GetIndex(c *cli.Context) error {
-	dryRun := c.Bool("dry-run")
+func DeleteStaleIndices(c *cli.Context) error {
+	force := c.Bool("force")
 	deleteList := make([]string, 0)
 
 	var config EsConfig
@@ -52,9 +54,13 @@ func GetIndex(c *cli.Context) error {
 		return err
 	}
 
-	settings, _ := esapi.IndicesGetSettingsRequest{FilterPath: []string{"*.settings.index.creation_date"}}.Do(context.TODO(), client)
+	settings, err := esapi.IndicesGetSettingsRequest{FilterPath: []string{"*.settings.index.creation_date"}}.Do(context.TODO(), client)
 
-	var list Indices
+	if err != nil {
+		return err
+	}
+
+	list := Indices{}
 
 	if err := json.NewDecoder(settings.Body).Decode(&list); err != nil {
 		log.Fatalf("Error parsing the response body: %s", err)
@@ -75,18 +81,53 @@ func GetIndex(c *cli.Context) error {
 			}
 		}
 		if c := len(deleteList); c > 0 {
-			if !dryRun {
+			if force {
 				fmt.Println("Deleting indices marked for deletion.")
-				_, err := esapi.IndicesDeleteRequest{Index: deleteList}.Do(context.TODO(), client)
+				statusCode, err := deleteIndices(client, deleteList, c)
 				if err != nil {
 					return err
 				} else {
-					fmt.Printf("%+v indices successfully deleted.", c)
+					if statusCode == 200 {
+						fmt.Printf("Deletion request failed. Status code %+v", statusCode)
+					} else {
+						fmt.Printf("%+v indices successfully deleted.", c)
+					}
 				}
 			} else {
-				fmt.Printf("The 'dry-run' flag is set - no further action taken. There are %+v indices marked for deletion", c)
+				prompt := promptui.Prompt{
+					Label:     "Delete indices",
+					IsConfirm: true,
+				}
+
+				prompt_result, _ := prompt.Run()
+
+				if prompt_result == "y" {
+					_, err := deleteIndices(client, deleteList, c)
+					if err != nil {
+						return err
+					}
+				} else {
+					fmt.Printf("Operation cancelled.\nThere are %+v indices marked for deletion.\n", c)
+				}
 			}
+		} else {
+			fmt.Printf("No indices meet the criteria for deletion.")
 		}
 	}
 	return nil
+}
+
+func deleteIndices(client *elasticsearch.Client, deleteList []string, c int) (int, error) {
+	res, err := esapi.IndicesDeleteRequest{Index: deleteList}.Do(context.TODO(), client)
+	if err != nil {
+		return res.StatusCode, err
+	} else {
+		if res.StatusCode == 200 {
+			fmt.Printf("Deletion request failed. Status code %+v", res.StatusCode)
+			return res.StatusCode, errors.New("non 200 status code")
+		} else {
+			fmt.Printf("%+v indices successfully deleted.", c)
+			return res.StatusCode, nil
+		}
+	}
 }

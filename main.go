@@ -88,17 +88,17 @@ func main() {
 			},
 			{
 				Name:  "elastic-cloud",
-				Usage: "commands to show Elastic Cloud deployment daat",
+				Usage: "commands to interact with Elastic Cloud deployments",
 				Subcommands: []*cli.Command{
 					{
-						Name:      "index-metadata",
-						Usage:     "shows metadata related to an index",
-						UsageText: "bay elastic-cloud index-metadata",
-						Action:    elastic_cloud.GetIndex,
+						Name:      "delete-stale",
+						Usage:     "deletes stale indices (> 30 days old)",
+						UsageText: "bay elastic-cloud delete-stale",
+						Action:    elastic_cloud.DeleteStaleIndices,
 						Flags: []cli.Flag{
 							&cli.BoolFlag{
-								Name:  "dry-run",
-								Usage: "Do not execute any mutations",
+								Name:  "force",
+								Usage: "Execute any mutations",
 							},
 						},
 					},

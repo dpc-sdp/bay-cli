@@ -21,6 +21,24 @@ This will store the encrypted file at `keys/production/oauth.pem.asc`.
 cat oauth.pen.asc | bay kms decrypt > oauth.pem
 ```
 
+## Elastic Cloud
+Commands for querying and interacting with the Elastic Cloud API.
+
+#### Required environment variables
+
+> [!CAUTION]
+> Variables are deployment specific - make sure the deployment you are targeting is not a production deployment.
+
+* EC_API_KEY - Generated from the deployments Kibana settings
+* EC_CLOUD_ID - Found on the deployments Elastic Cloud 'manage' page
+
+#### Usage
+`delete-stale` Delete indices that are greater than 30 days old
+
+```
+bay-cli elastic-cloud delete-stale
+```
+
 # Installation
 
 ## Homebrew (OSX)
