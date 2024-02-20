@@ -24,7 +24,7 @@ cat oauth.pen.asc | bay kms decrypt > oauth.pem
 ## Elastic Cloud
 Commands for querying and interacting with the Elastic Cloud API.
 
-#### Required environment variables
+#### Required inputs
 
 > [!CAUTION]
 > Variables are deployment specific - make sure the deployment you are targeting is not a production deployment.

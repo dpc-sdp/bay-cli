@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -16,15 +15,8 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/urfave/cli/v2"
 
-	envconfig "github.com/sethvargo/go-envconfig"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
-
-// Config for Elasticsearch client
-type EsConfig struct {
-	ApiKey  string `env:"EC_API_KEY"`
-	CloudId string `env:"EC_CLOUD_ID"`
-}
 
 type IndexSettings struct {
 	IndexItem struct {
@@ -40,15 +32,11 @@ var setupLog = ctrl.Log.WithName("setup")
 
 func DeleteStaleIndices(c *cli.Context) error {
 	force := c.Bool("force")
+	ApiKey := c.String("EC_API_KEY")
+	CloudId := c.String("EC_CLOUD_ID")
 	deleteList := make([]string, 0)
 
-	var config EsConfig
-	if err := envconfig.Process(context.Background(), &config); err != nil {
-		setupLog.Error(err, "unable to parse environment variables")
-		os.Exit(1)
-	}
-
-	client, err := elasticsearch.NewClient(elasticsearch.Config{APIKey: config.ApiKey, CloudID: config.CloudId})
+	client, err := elasticsearch.NewClient(elasticsearch.Config{APIKey: ApiKey, CloudID: CloudId})
 
 	if err != nil {
 		return err

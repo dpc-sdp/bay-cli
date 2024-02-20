@@ -100,6 +100,14 @@ func main() {
 								Name:  "force",
 								Usage: "Execute any mutations",
 							},
+							&cli.StringFlag{
+								Name:     "EC_API_KEY",
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:     "EC_CLOUD_ID",
+								Required: true,
+							},
 						},
 					},
 				},
