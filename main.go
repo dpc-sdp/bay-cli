@@ -101,8 +101,16 @@ func main() {
 								Usage: "skips all confirmation prompts and immediately executes mutations",
 							},
 							&cli.StringFlag{
-								Name:     "EC_DEPLOYMENT_CLOUD_ID",
+								Name:     "deployment-id",
+								Usage:    "cloud deployment ID as listed on the Elastic Cloud 'manage' page",
 								Required: true,
+								EnvVars:  []string{"EC_DEPLOYMENT_CLOUD_ID"},
+							},
+							&cli.StringFlag{
+								Name:     "deployment-api-key",
+								Required: true,
+								Hidden:   true,
+								EnvVars:  []string{"EC_DEPLOYMENT_API_KEY"},
 							},
 							&cli.Int64Flag{
 								Name:  "age",
