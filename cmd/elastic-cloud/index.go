@@ -3,20 +3,16 @@ package elastic_cloud
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"log"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/elastic/go-elasticsearch/v8"
+	elasticsearch "github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/manifoldco/promptui"
+	errors "github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
-
-	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 type IndexSettings struct {
@@ -28,8 +24,6 @@ type IndexSettings struct {
 }
 
 type Indices map[string]IndexSettings
-
-var setupLog = ctrl.Log.WithName("setup")
 
 func DeleteStaleIndices(c *cli.Context) error {
 	force := c.Bool("force")
@@ -44,7 +38,6 @@ func DeleteStaleIndices(c *cli.Context) error {
 	}
 
 	settings, err := esapi.IndicesGetSettingsRequest{FilterPath: []string{"*.settings.index.creation_date"}}.Do(context.TODO(), client)
-
 	if err != nil {
 		return err
 	}
@@ -52,7 +45,7 @@ func DeleteStaleIndices(c *cli.Context) error {
 	list := Indices{}
 
 	if err := json.NewDecoder(settings.Body).Decode(&list); err != nil {
-		log.Fatalf("Error parsing the response body: %s", err)
+		return errors.Wrap(err, "Error parsing the response body")
 	} else {
 		for k, i := range list {
 			if strings.Contains(k, "elasticsearch_index") {
@@ -65,22 +58,22 @@ func DeleteStaleIndices(c *cli.Context) error {
 				diffInDays := (now - created) / (1000 * 60 * 60 * 24)
 
 				if diffInDays > age {
-					fmt.Printf("The index %+v is %v days old and will be marked for deletion\n", k, diffInDays)
+					fmt.Fprintf(c.App.Writer, "The index %+v is %v days old and will be marked for deletion\n", k, diffInDays)
 					deleteList = append(deleteList, k)
 				}
 			}
 		}
-		if c := len(deleteList); c > 0 {
+		if i := len(deleteList); i > 0 {
 			if force {
-				fmt.Println("Deleting indices marked for deletion.")
-				statusCode, err := deleteIndices(client, deleteList, c)
+				fmt.Fprint(c.App.Writer, "Deleting indices marked for deletion.")
+				statusCode, err := deleteIndices(client, deleteList, i)
 				if err != nil {
-					return err
+					return errors.Wrap(err, "error deleting indices")
 				} else {
 					if statusCode == 200 {
-						fmt.Printf("Deletion request failed. Status code %+v", statusCode)
+						fmt.Fprintf(c.App.Writer, "Deletion request failed. Status code %+v", statusCode)
 					} else {
-						fmt.Printf("%+v indices successfully deleted.", c)
+						fmt.Fprintf(c.App.Writer, "%+v indices successfully deleted.", i)
 					}
 				}
 			} else {
@@ -92,12 +85,12 @@ func DeleteStaleIndices(c *cli.Context) error {
 				prompt_result, _ := prompt.Run()
 
 				if prompt_result == "y" {
-					_, err := deleteIndices(client, deleteList, c)
+					_, err := deleteIndices(client, deleteList, i)
 					if err != nil {
 						return err
 					}
 				} else {
-					fmt.Printf("Operation cancelled.\nThere are %+v indices marked for deletion.\n", c)
+					fmt.Printf("Operation cancelled.\nThere are %+v indices marked for deletion.\n", i)
 				}
 			}
 		} else {
