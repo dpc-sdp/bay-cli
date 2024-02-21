@@ -101,12 +101,13 @@ func main() {
 								Usage: "skips all confirmation prompts and immediately executes mutations",
 							},
 							&cli.StringFlag{
-								Name:     "EC_API_KEY",
+								Name:     "EC_DEPLOYMENT_CLOUD_ID",
 								Required: true,
 							},
-							&cli.StringFlag{
-								Name:     "EC_CLOUD_ID",
-								Required: true,
+							&cli.Int64Flag{
+								Name:  "age",
+								Value: int64(30),
+								Usage: "sets the minimum age of indices to be marked for deletion",
 							},
 						},
 					},

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -13,10 +14,16 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/manifoldco/promptui"
+	"github.com/sethvargo/go-envconfig"
 	"github.com/urfave/cli/v2"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 )
+
+type EcConfig struct {
+	APIKey  string `env:"EC_DEPLOYMENT_API_KEY"`
+	CloudID string
+}
 
 type IndexSettings struct {
 	IndexItem struct {
@@ -32,11 +39,18 @@ var setupLog = ctrl.Log.WithName("setup")
 
 func DeleteStaleIndices(c *cli.Context) error {
 	force := c.Bool("force")
-	ApiKey := c.String("EC_API_KEY")
-	CloudId := c.String("EC_CLOUD_ID")
+	cloudId := c.String("EC_DEPLOYMENT_CLOUD_ID")
+	age := c.Int64("age")
 	deleteList := make([]string, 0)
 
-	client, err := elasticsearch.NewClient(elasticsearch.Config{APIKey: ApiKey, CloudID: CloudId})
+	ecConfig := EcConfig{}
+	if err := envconfig.Process(context.Background(), &ecConfig); err != nil {
+		setupLog.Error(err, "unable to parse environment variables")
+		os.Exit(1)
+	}
+
+	ecConfig.CloudID = cloudId
+	client, err := elasticsearch.NewClient(elasticsearch.Config{APIKey: ecConfig.APIKey, CloudID: ecConfig.CloudID})
 
 	if err != nil {
 		return err
@@ -62,7 +76,8 @@ func DeleteStaleIndices(c *cli.Context) error {
 				}
 
 				diffInDays := (now - created) / (1000 * 60 * 60 * 24)
-				if diffInDays > 30 {
+
+				if diffInDays > age {
 					fmt.Printf("The index %+v is %v days old and will be marked for deletion\n", k, diffInDays)
 					deleteList = append(deleteList, k)
 				}

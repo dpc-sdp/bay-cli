@@ -29,14 +29,14 @@ Commands for querying and interacting with the Elastic Cloud API.
 > [!CAUTION]
 > Variables are deployment specific - make sure the deployment you are targeting is not a production deployment.
 
-* EC_API_KEY - Generated from the deployments Kibana settings
-* EC_CLOUD_ID - Found on the deployments Elastic Cloud 'manage' page
+* `EC_DEPLOYMENT_API_KEY` (environment variable) - Generated from the deployments Kibana settings
+* `EC_DEPLOYMENT_CLOUD_ID` (command line flag) - Found on the deployments Elastic Cloud 'manage' page
 
 #### Usage
 `delete-stale` Delete indices that are greater than 30 days old
 
 ```
-bay elastic-cloud delete-stale
+bay elastic-cloud delete-stale --EC_DEPLOYMENT_CLOUD_ID 'string'
 ```
 
 # Installation
