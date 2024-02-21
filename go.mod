@@ -8,13 +8,10 @@ require (
 	github.com/alexeyco/simpletable v1.0.0
 	github.com/aws/aws-sdk-go-v2/config v1.26.3
 	github.com/aws/aws-sdk-go-v2/service/kms v1.27.9
-	github.com/elastic/go-elasticsearch v0.0.0
 	github.com/elastic/go-elasticsearch/v8 v8.12.0
 	github.com/manifoldco/promptui v0.9.0
 	github.com/pkg/errors v0.9.1
-	github.com/rs/zerolog v1.32.0
 	github.com/sethvargo/go-envconfig v1.0.0
-	github.com/spf13/cobra v1.8.0
 	github.com/urfave/cli/v2 v2.27.1
 	github.com/uselagoon/machinery v0.0.16
 	golang.org/x/crypto v0.18.0
@@ -59,13 +56,10 @@ require (
 	github.com/guregu/null v4.0.0+incompatible // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/imdario/mergo v0.3.6 // indirect
-	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/machinebox/graphql v0.2.2 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mattn/go-runewidth v0.0.12 // indirect
 	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
