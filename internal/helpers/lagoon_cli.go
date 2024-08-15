@@ -74,6 +74,6 @@ func NewLagoonClient(context *string) (*lagoon_client.Client, error) {
 		return nil, err
 	}
 
-	client := lagoon_client.New(lagoonContext.GraphQL, "github.com/dpc-sdp/bay-cli", &lagoonContext.Token, false)
+	client := lagoon_client.New(lagoonContext.GraphQL, "github.com/dpc-sdp/bay-cli", lagoonContext.Version, &lagoonContext.Token, false)
 	return client, nil
 }
