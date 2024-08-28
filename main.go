@@ -10,6 +10,11 @@ import (
 	project_map "github.com/dpc-sdp/bay-cli/cmd/project-map"
 )
 
+const (
+	EnvLagoonProject         = "LAGOON_PROJECT"
+	EnvLagoonEnvironmentType = "LAGOON_ENVIRONMENT_TYPE"
+)
+
 func main() {
 	app := &cli.App{
 		Name:  "bay",
@@ -27,11 +32,13 @@ func main() {
 							&cli.StringFlag{
 								Name:     "project",
 								Usage:    "Name of lagoon project",
+								EnvVars:  []string{EnvLagoonProject},
 								Required: true,
 							},
 							&cli.StringFlag{
 								Name:     "key",
 								Usage:    "Name of key",
+								EnvVars:  []string{EnvLagoonEnvironmentType},
 								Required: true,
 							},
 						},
