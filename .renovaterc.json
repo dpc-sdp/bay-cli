@@ -1,0 +1,27 @@
+{
+  "extends": [
+    "config:base"
+  ],
+  "enabledManagers": [
+    "gomod"
+  ],
+  "gomod": {
+    "enabled": true,
+    "fileMatch": [
+      "go\\.mod$",
+      "go\\.sum$"
+    ],
+    "commitMessageTopic": "Go Modules"
+  },
+  "packageRules": [
+    {
+      "managers": ["gomod"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "all non-major dependencies",
+      "schedule": ["before 6am on Monday"]
+    }
+  ],
+  "schedule": [
+    "before 3am on Monday"
+  ]
+}
