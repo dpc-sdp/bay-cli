@@ -34,22 +34,31 @@ func DeploymentMetadata(c *cli.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "unable to get HEAD reference")
 	}
+	fmt.Println(ref.Hash())
 
 	msg, err := repo.CommitObject(ref.Hash())
 	if err != nil {
 		return errors.Wrap(err, "unable to get commit object")
 	}
 
-	tag, _ := repo.Tag("HEAD")
+	tagString := ""
+
+	tag, err := repo.Tag("HEAD")
+
+	if err != nil {
+		tagString = "No tag found"
+	} else {
+		tagString = tag.Name().Short()
+	}
 
 	msgFirstLn := strings.TrimLeft(strings.Split(msg.String(), "\n")[4], " ")
 
 	item := Item{
-		Sha:        fmt.Sprintf("%s", ref.Hash()),
-		AuthorName: fmt.Sprintf("%s", msg.Author.Name),
-		When:       fmt.Sprintf("%s", msg.Author.When),
-		Msg:        fmt.Sprintf("%s", msgFirstLn),
-		Tag:        fmt.Sprintf("%s", tag),
+		Sha:        ref.Hash().String(),
+		AuthorName: msg.Author.Name,
+		When:       msg.Author.When.String(),
+		Msg:        msgFirstLn,
+		Tag:        tagString,
 	}
 
 	md := Metadata{
