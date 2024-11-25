@@ -32,7 +32,6 @@ func DeploymentMetadata(c *cli.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "unable to get HEAD reference")
 	}
-	fmt.Println(ref.Hash())
 
 	msg, err := repo.CommitObject(ref.Hash())
 	if err != nil {
