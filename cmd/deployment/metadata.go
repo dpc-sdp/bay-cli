@@ -23,8 +23,6 @@ type Item struct {
 }
 
 func DeploymentMetadata(c *cli.Context) error {
-	// logger := log.New(c.App.ErrWriter, "", log.LstdFlags)
-
 	repo, err := git.PlainOpenWithOptions(".", &git.PlainOpenOptions{DetectDotGit: true})
 	if err != nil {
 		return errors.Wrap(err, "unable to open git repository")
