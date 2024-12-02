@@ -7,6 +7,7 @@ import (
 	"github.com/dpc-sdp/bay-cli/cmd/kms"
 	cli "github.com/urfave/cli/v2"
 
+	deployment "github.com/dpc-sdp/bay-cli/cmd/deployment"
 	project_map "github.com/dpc-sdp/bay-cli/cmd/project-map"
 )
 
@@ -89,6 +90,18 @@ func main() {
 							},
 						},
 						Action: project_map.ByFrontend,
+					},
+				},
+			},
+			{
+				Name:  "deployment",
+				Usage: "commands for deployment actions",
+				Subcommands: []*cli.Command{
+					{
+						Name:      "metadata",
+						Usage:     "generates a json object with deployment metadata",
+						UsageText: "bay deployment metadata",
+						Action:    deployment.DeploymentMetadata,
 					},
 				},
 			},
