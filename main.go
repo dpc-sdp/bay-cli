@@ -99,7 +99,7 @@ func main() {
 				Subcommands: []*cli.Command{
 					{
 						Name:      "metadata",
-						Usage:     "generates a file with deployment metadata",
+						Usage:     "generates a json object with deployment metadata",
 						UsageText: "bay deployment metadata",
 						Action:    deployment.DeploymentMetadata,
 					},
