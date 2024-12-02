@@ -11,10 +11,10 @@ import (
 )
 
 type Metadata struct {
-	Deployment Item `json:"deployment"`
+	DeploymentMetadata Deployment `json:"deployment"`
 }
 
-type Item struct {
+type Deployment struct {
 	Sha        string `json:"sha"`
 	AuthorName string `json:"authorName"`
 	When       string `json:"when"`
@@ -50,7 +50,7 @@ func DeploymentMetadata(c *cli.Context) error {
 
 	msgFirstLn := strings.TrimLeft(strings.Split(msg.String(), "\n")[4], " ")
 
-	item := Item{
+	item := Deployment{
 		Sha:        ref.Hash().String(),
 		AuthorName: msg.Author.Name,
 		When:       msg.Author.When.String(),
@@ -59,7 +59,7 @@ func DeploymentMetadata(c *cli.Context) error {
 	}
 
 	md := Metadata{
-		Deployment: item,
+		DeploymentMetadata: item,
 	}
 
 	json, _ := json.Marshal(md)
