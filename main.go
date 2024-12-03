@@ -7,8 +7,14 @@ import (
 	"github.com/dpc-sdp/bay-cli/cmd/kms"
 	cli "github.com/urfave/cli/v2"
 
+	deployment "github.com/dpc-sdp/bay-cli/cmd/deployment"
 	elastic_cloud "github.com/dpc-sdp/bay-cli/cmd/elastic-cloud"
 	project_map "github.com/dpc-sdp/bay-cli/cmd/project-map"
+)
+
+const (
+	EnvLagoonProject         = "LAGOON_PROJECT"
+	EnvLagoonEnvironmentType = "LAGOON_ENVIRONMENT_TYPE"
 )
 
 func main() {
@@ -28,11 +34,13 @@ func main() {
 							&cli.StringFlag{
 								Name:     "project",
 								Usage:    "Name of lagoon project",
+								EnvVars:  []string{EnvLagoonProject},
 								Required: true,
 							},
 							&cli.StringFlag{
 								Name:     "key",
 								Usage:    "Name of key",
+								EnvVars:  []string{EnvLagoonEnvironmentType},
 								Required: true,
 							},
 						},
@@ -83,6 +91,18 @@ func main() {
 							},
 						},
 						Action: project_map.ByFrontend,
+					},
+				},
+			},
+			{
+				Name:  "deployment",
+				Usage: "commands for deployment actions",
+				Subcommands: []*cli.Command{
+					{
+						Name:      "metadata",
+						Usage:     "generates a json object with deployment metadata",
+						UsageText: "bay deployment metadata",
+						Action:    deployment.DeploymentMetadata,
 					},
 				},
 			},
