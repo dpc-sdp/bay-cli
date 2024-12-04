@@ -25,6 +25,14 @@ type IndexSettings struct {
 
 type Indices map[string]IndexSettings
 
+type AliasAttr struct {
+	IsHidden bool `json:"is_hidden"`
+}
+
+type Aliases struct {
+	Aliases map[string]AliasAttr `json:"aliases"`
+}
+
 func DeleteStaleIndices(c *cli.Context) error {
 	force := c.Bool("force")
 	apiKey := c.String("deployment-api-key")
@@ -38,17 +46,26 @@ func DeleteStaleIndices(c *cli.Context) error {
 	}
 
 	settings, err := esapi.IndicesGetSettingsRequest{FilterPath: []string{"*.settings.index.creation_date"}}.Do(context.TODO(), client)
+
 	if err != nil {
 		return err
 	}
 
-	list := Indices{}
+	indicesList := Indices{}
 
-	if err := json.NewDecoder(settings.Body).Decode(&list); err != nil {
+	if err := json.NewDecoder(settings.Body).Decode(&indicesList); err != nil {
 		return errors.Wrap(err, "Error parsing the response body")
 	} else {
-		for k, i := range list {
+		for k, i := range indicesList {
 			if strings.Contains(k, "elasticsearch_index") {
+				a, err := esapi.IndicesGetAliasRequest{Index: []string{k}}.Do(context.TODO(), client)
+				if err != nil {
+					return err
+				}
+				aliasList := map[string]Aliases{}
+				if err := json.NewDecoder(a.Body).Decode(&aliasList); err != nil {
+					return errors.Wrap(err, "Error parsing the response body")
+				}
 				now := time.Now().UnixMilli()
 				created, err := strconv.ParseInt(i.IndexItem.IndexDetail.CreationDate, 10, 64)
 				if err != nil {
@@ -58,8 +75,15 @@ func DeleteStaleIndices(c *cli.Context) error {
 				diffInDays := (now - created) / (1000 * 60 * 60 * 24)
 
 				if diffInDays > age {
-					fmt.Fprintf(c.App.Writer, "The index %+v is %v days old and will be marked for deletion\n", k, diffInDays)
-					deleteList = append(deleteList, k)
+					if len(aliasList[k].Aliases) > 0 {
+						for aliasName, _ := range aliasList[k].Aliases {
+							fmt.Fprintf(c.App.Writer, "The index %+v is %v days old but will not be deleted because it has an associated alias %+v\n", k, diffInDays, aliasName)
+						}
+					} else {
+						fmt.Fprintf(c.App.Writer, "The index %+v is %v days old and will be marked for deletion\n", k, diffInDays)
+						deleteList = append(deleteList, k)
+
+					}
 				}
 			}
 		}
