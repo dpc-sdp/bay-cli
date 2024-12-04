@@ -1,4 +1,4 @@
-package project_map
+package deployment
 
 import (
 	"encoding/json"
