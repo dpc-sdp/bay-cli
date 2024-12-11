@@ -8,11 +8,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dpc-sdp/bay-cli/internal/helpers"
 	elasticsearch "github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/manifoldco/promptui"
 	errors "github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
+	lagoon_client "github.com/uselagoon/machinery/api/lagoon/client"
+	"github.com/uselagoon/machinery/api/schema"
 )
 
 type IndexSettings struct {
@@ -39,6 +42,21 @@ func DeleteStaleIndices(c *cli.Context) error {
 	cloudId := c.String("deployment-id")
 	age := c.Int64("age")
 	deleteList := make([]string, 0)
+
+	hash := "f638372d60d9258888e59583f505162f"
+
+	hashes, err := NewHashMap()
+	if err != nil {
+		return err
+	}
+
+	project, err := hashes.LookupProjectFromHash(hash)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Project: %+v\n", project)
 
 	client, err := elasticsearch.NewClient(elasticsearch.Config{APIKey: apiKey, CloudID: cloudId})
 	if err != nil {
@@ -76,7 +94,7 @@ func DeleteStaleIndices(c *cli.Context) error {
 
 				if diffInDays > age {
 					if len(aliasList[k].Aliases) > 0 {
-						for aliasName, _ := range aliasList[k].Aliases {
+						for aliasName := range aliasList[k].Aliases {
 							fmt.Fprintf(c.App.Writer, "The index %+v is %v days old but will not be deleted because it has an associated alias %+v\n", k, diffInDays, aliasName)
 						}
 					} else {
@@ -137,4 +155,55 @@ func deleteIndices(client *elasticsearch.Client, deleteList []string, c int) (in
 			return res.StatusCode, nil
 		}
 	}
+}
+
+type HashMap struct {
+	Hashes map[string]string `json:"hashes"`
+}
+
+func (h *HashMap) LookupProjectFromHash(hash string) (string, error) {
+	if val, ok := h.Hashes[hash]; ok {
+		return val, nil
+	}
+	return "", errors.New("hash not found")
+
+}
+
+// Compute the lookup table of hash to project name.
+func NewHashMap() (HashMap, error) {
+	hashMap := HashMap{
+		Hashes: make(map[string]string),
+	}
+	client, err := helpers.NewLagoonClient(nil)
+	if err != nil {
+		return hashMap, err
+	}
+	projects, _ := getLagoonProjects(context.TODO(), client)
+
+	for _, project := range projects {
+		searchHash, _ := getLagoonProjectVar(context.TODO(), client, project.Name, "SEARCH_HASH")
+		hashMap.Hashes[searchHash] = project.Name
+	}
+	fmt.Printf("Hashmap: %+v\n", hashMap)
+	return hashMap, nil
+}
+
+// Lookup Lagoon projects
+func getLagoonProjects(ctx context.Context, client *lagoon_client.Client) ([]schema.ProjectMetadata, error) {
+	projects := make([]schema.ProjectMetadata, 0)
+
+	err := client.ProjectsByMetadata(ctx, "type", "tide", &projects)
+	return projects, err
+}
+
+// Lookup Lagoon projects
+func getLagoonProjectVar(ctx context.Context, client *lagoon_client.Client, projectName string, varName string) (string, error) {
+	vars := []schema.EnvKeyValue{}
+	err := client.GetEnvVariablesByProjectEnvironmentName(ctx, &schema.EnvVariableByProjectEnvironmentNameInput{Project: projectName}, &vars)
+	for _, v := range vars {
+		if v.Name == varName {
+			return v.Value, nil
+		}
+	}
+	return "", err
 }
