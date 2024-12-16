@@ -95,10 +95,10 @@ func DeleteStaleIndices(c *cli.Context) error {
 				if diffInDays > age {
 					if len(aliasList[k].Aliases) > 0 {
 						for aliasName := range aliasList[k].Aliases {
-							fmt.Fprintf(c.App.Writer, "The index %+v is %v days old but will not be deleted because it has an associated alias %+v\n", k, diffInDays, aliasName)
+							fmt.Fprintf(c.App.Writer, "The index %s is %d days old but will not be deleted because it has an associated alias %s\n", k, diffInDays, aliasName)
 						}
 					} else {
-						fmt.Fprintf(c.App.Writer, "The index %+v is %v days old and will be marked for deletion\n", k, diffInDays)
+						fmt.Fprintf(c.App.Writer, "The index %s is %d days old and will be marked for deletion\n", k, diffInDays)
 						deleteList = append(deleteList, k)
 
 					}
@@ -113,7 +113,7 @@ func DeleteStaleIndices(c *cli.Context) error {
 					return errors.Wrap(err, "error deleting indices")
 				} else {
 					if statusCode == 200 {
-						fmt.Fprintf(c.App.Writer, "Deletion request failed. Status code %+v", statusCode)
+						fmt.Fprintf(c.App.Writer, "Deletion request failed. Status code %d", statusCode)
 					} else {
 						fmt.Fprintf(c.App.Writer, "%+v indices successfully deleted.", i)
 					}
@@ -132,7 +132,7 @@ func DeleteStaleIndices(c *cli.Context) error {
 						return err
 					}
 				} else {
-					fmt.Printf("Operation cancelled.\nThere are %+v indices marked for deletion.\n", i)
+					fmt.Printf("Operation cancelled.\nThere are %d indices marked for deletion.\n", i)
 				}
 			}
 		} else {
