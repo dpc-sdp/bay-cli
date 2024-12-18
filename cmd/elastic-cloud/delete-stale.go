@@ -43,20 +43,10 @@ func DeleteStaleIndices(c *cli.Context) error {
 	age := c.Int64("age")
 	deleteList := make([]string, 0)
 
-	hash := "f638372d60d9258888e59583f505162f"
-
 	hashes, err := NewHashMap()
 	if err != nil {
 		return err
 	}
-
-	project, err := hashes.LookupProjectFromHash(hash)
-
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Project: %+v\n", project)
 
 	client, err := elasticsearch.NewClient(elasticsearch.Config{APIKey: apiKey, CloudID: cloudId})
 	if err != nil {
@@ -93,6 +83,15 @@ func DeleteStaleIndices(c *cli.Context) error {
 				diffInDays := (now - created) / (1000 * 60 * 60 * 24)
 
 				if diffInDays > age {
+					// Add helper function to compute hash from k.
+					hash := strings.Split(k, "--")[0]
+					project, err := hashes.LookupProjectFromHash(hash)
+					if err != nil {
+						fmt.Printf("Error looking up project for hash %+v\n", hash)
+					}
+
+					fmt.Printf("Project: %+v\n", project)
+
 					if len(aliasList[k].Aliases) > 0 {
 						for aliasName := range aliasList[k].Aliases {
 							fmt.Fprintf(c.App.Writer, "The index %s is %d days old but will not be deleted because it has an associated alias %s\n", k, diffInDays, aliasName)
@@ -100,7 +99,6 @@ func DeleteStaleIndices(c *cli.Context) error {
 					} else {
 						fmt.Fprintf(c.App.Writer, "The index %s is %d days old and will be marked for deletion\n", k, diffInDays)
 						deleteList = append(deleteList, k)
-
 					}
 				}
 			}
@@ -202,7 +200,7 @@ func getLagoonProjectVar(ctx context.Context, client *lagoon_client.Client, proj
 	err := client.GetEnvVariablesByProjectEnvironmentName(ctx, &schema.EnvVariableByProjectEnvironmentNameInput{Project: projectName}, &vars)
 	for _, v := range vars {
 		if v.Name == varName {
-			return v.Value, nil
+			return strings.ToLower(v.Value), nil
 		}
 	}
 	return "", err
