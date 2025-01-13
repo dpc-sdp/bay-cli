@@ -101,8 +101,6 @@ func DeleteStaleIndices(c *cli.Context) error {
 					diffInDays := (now - created) / (1000 * 60 * 60 * 24)
 
 					if diffInDays > age {
-						// Add helper function to compute hash from k.
-
 						if len(aliasList[k].Aliases) > 0 {
 							for aliasName := range aliasList[k].Aliases {
 								fmt.Fprintf(c.App.Writer, "The index %s is %d days old but will not be deleted because it has an associated alias %s\n", k, diffInDays, aliasName)
@@ -195,7 +193,7 @@ func NewHashMap() (HashMap, error) {
 		searchHash, _ := getLagoonProjectVar(context.TODO(), client, project.Name, "SEARCH_HASH")
 		hashMap.Hashes[searchHash] = project.Name
 	}
-	fmt.Printf("Hashmap: %+v\n", hashMap)
+
 	return hashMap, nil
 }
 
