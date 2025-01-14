@@ -43,6 +43,7 @@ func DeleteStaleIndices(c *cli.Context) error {
 	apiKey := c.String("deployment-api-key")
 	cloudId := c.String("deployment-id")
 	age := c.Int64("age")
+	outputDeleteList := c.Bool("output-delete-list")
 	deleteList := make([]string, 0)
 
 	hashes, err := NewHashMap()
@@ -71,16 +72,19 @@ func DeleteStaleIndices(c *cli.Context) error {
 			if strings.Contains(k, "elasticsearch_index") {
 				// TODO: Add handling of non hash based Drupal indices.
 				hash := strings.Split(k, "--")[0]
-				project, err := hashes.LookupProjectFromHash(hash)
-				if err != nil {
-					fmt.Printf("Error looking up project for hash %+v\n", hash)
-				}
+				project, _ := hashes.LookupProjectFromHash(hash)
 
 				IndicesByProject[project] = append(IndicesByProject[project], map[string]IndexSettings{k: i})
 			}
 		}
 		for p, i := range IndicesByProject {
-			fmt.Printf("Scanning %s indices: \n", p)
+			if !outputDeleteList {
+				if p == "" {
+					fmt.Printf("Checking age of non-hashed indices: %s \n", i)
+				} else {
+					fmt.Printf("Checking age of %s indices: \n", p)
+				}
+			}
 			for _, j := range i {
 				for k, i := range j {
 					// TODO: Add a parameter to exclude a project by it's name.
@@ -102,11 +106,15 @@ func DeleteStaleIndices(c *cli.Context) error {
 
 					if diffInDays > age {
 						if len(aliasList[k].Aliases) > 0 {
-							for aliasName := range aliasList[k].Aliases {
-								fmt.Fprintf(c.App.Writer, "The index %s is %d days old but will not be deleted because it has an associated alias %s\n", k, diffInDays, aliasName)
+							if !outputDeleteList {
+								for aliasName := range aliasList[k].Aliases {
+									fmt.Fprintf(c.App.Writer, "The index %s is %d days old but will not be deleted because it has an associated alias %s\n", k, diffInDays, aliasName)
+								}
 							}
 						} else {
-							fmt.Fprintf(c.App.Writer, "The index %s is %d days old and will be marked for deletion\n", k, diffInDays)
+							if !outputDeleteList {
+								fmt.Fprintf(c.App.Writer, "The index %s is %d days old and will be marked for deletion\n", k, diffInDays)
+							}
 							deleteList = append(deleteList, k)
 						}
 					}
@@ -115,6 +123,10 @@ func DeleteStaleIndices(c *cli.Context) error {
 			}
 		}
 		if i := len(deleteList); i > 0 {
+			if outputDeleteList {
+				json, _ := json.Marshal(deleteList)
+				fmt.Printf("%+s", string(json))
+			}
 			if force {
 				fmt.Fprint(c.App.Writer, "Deleting indices marked for deletion.")
 				statusCode, err := deleteIndices(client, deleteList, i)

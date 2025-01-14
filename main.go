@@ -120,6 +120,10 @@ func main() {
 								Name:  "force",
 								Usage: "skips all confirmation prompts and immediately executes mutations",
 							},
+							&cli.BoolFlag{
+								Name:  "output-delete-list",
+								Usage: "outputs a JSON formatted list of indices that would be deleted",
+							},
 							&cli.StringFlag{
 								Name:     "deployment-id",
 								Usage:    "cloud deployment ID as listed on the Elastic Cloud 'manage' page",
