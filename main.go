@@ -8,6 +8,7 @@ import (
 	cli "github.com/urfave/cli/v2"
 
 	deployment "github.com/dpc-sdp/bay-cli/cmd/deployment"
+	elastic_cloud "github.com/dpc-sdp/bay-cli/cmd/elastic-cloud"
 	project_map "github.com/dpc-sdp/bay-cli/cmd/project-map"
 )
 
@@ -102,6 +103,53 @@ func main() {
 						Usage:     "generates a json object with deployment metadata",
 						UsageText: "bay deployment metadata",
 						Action:    deployment.DeploymentMetadata,
+					},
+				},
+			},
+			{
+				Name:   "elastic-cloud",
+				Usage:  "commands to interact with Elastic Cloud deployments",
+				Hidden: true,
+				Subcommands: []*cli.Command{
+					{
+						Name:      "unassigned-shards",
+						Usage:     "Prints unassigned shards in JSON format",
+						UsageText: "bay elastic-cloud unassigned-shards",
+						Action:    elastic_cloud.ListUnassignedShards,
+						Flags:     []cli.Flag{},
+					},
+					{
+						Name:      "delete-stale",
+						Usage:     "deletes stale indices (> 30 days old)",
+						UsageText: "bay elastic-cloud delete-stale",
+						Action:    elastic_cloud.DeleteStaleIndices,
+						Flags: []cli.Flag{
+							&cli.BoolFlag{
+								Name:  "force",
+								Usage: "skips all confirmation prompts and immediately executes mutations",
+							},
+							&cli.BoolFlag{
+								Name:  "output-delete-list",
+								Usage: "outputs a list of indices that would be deleted",
+							},
+							&cli.StringFlag{
+								Name:     "deployment-id",
+								Usage:    "cloud deployment ID as listed on the Elastic Cloud 'manage' page",
+								Required: true,
+								EnvVars:  []string{"EC_DEPLOYMENT_CLOUD_ID"},
+							},
+							&cli.StringFlag{
+								Name:     "deployment-api-key",
+								Required: true,
+								Hidden:   true,
+								EnvVars:  []string{"EC_DEPLOYMENT_API_KEY"},
+							},
+							&cli.Int64Flag{
+								Name:  "age",
+								Value: int64(30),
+								Usage: "sets the minimum age of indices to be marked for deletion",
+							},
+						},
 					},
 				},
 			},
