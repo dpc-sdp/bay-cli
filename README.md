@@ -33,7 +33,12 @@ Commands for querying and interacting with the Elastic Cloud API.
 * `--deployment-id` (command line flag) - Found on the deployments Elastic Cloud 'manage' page. Can be set with `EC_DEPLOYMENT_CLOUD_ID` envvar.
 
 #### Usage
-`delete-stale` Delete indices that are greater than 30 days old
+`delete-stale` Delete indices that are greater than 30 days (default) old
+
+> [!NOTE]  
+> Considerations for App Search engines.
+> Indices that have an associated alias are not included in the final list of indices to be deleted.
+> If an index with an alias is deleted the reference between the engine and the index is lost, even after recreation of the index.
 
 ```
 bay elastic-cloud delete-stale --deployment-id 'string'

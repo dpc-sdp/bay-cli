@@ -107,9 +107,17 @@ func main() {
 				},
 			},
 			{
-				Name:  "elastic-cloud",
-				Usage: "commands to interact with Elastic Cloud deployments",
+				Name:   "elastic-cloud",
+				Usage:  "commands to interact with Elastic Cloud deployments",
+				Hidden: true,
 				Subcommands: []*cli.Command{
+					{
+						Name:      "unassigned-shards",
+						Usage:     "Prints unassigned shards in JSON format",
+						UsageText: "bay elastic-cloud unassigned-shards",
+						Action:    elastic_cloud.ListUnassignedShards,
+						Flags:     []cli.Flag{},
+					},
 					{
 						Name:      "delete-stale",
 						Usage:     "deletes stale indices (> 30 days old)",
@@ -122,7 +130,7 @@ func main() {
 							},
 							&cli.BoolFlag{
 								Name:  "output-delete-list",
-								Usage: "outputs a JSON formatted list of indices that would be deleted",
+								Usage: "outputs a list of indices that would be deleted",
 							},
 							&cli.StringFlag{
 								Name:     "deployment-id",
