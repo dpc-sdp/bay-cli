@@ -1,6 +1,6 @@
 {
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
   "enabledManagers": [
     "gomod"
@@ -15,10 +15,17 @@
   },
   "packageRules": [
     {
-      "managers": ["gomod"],
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchManagers": [
+        "gomod"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
       "groupName": "all non-major dependencies",
-      "schedule": ["before 6am on Monday"]
+      "schedule": [
+        "before 6am on Monday"
+      ]
     }
   ],
   "schedule": [
