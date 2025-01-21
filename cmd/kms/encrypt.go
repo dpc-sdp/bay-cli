@@ -31,6 +31,9 @@ func Encrypt(c *cli.Context) error {
 		return errors.New("file exceeds maximum filesize - we plan to support files greater than 4KB in the future")
 	}
 
+	// Trim whitespace from the input.
+	inputContents = []byte(strings.TrimSpace(string(inputContents)))
+
 	alias := helpers.BuildKmsAlias(c.String("project"), c.String("key"))
 	logger.Printf("encrypting with key %s", alias)
 
