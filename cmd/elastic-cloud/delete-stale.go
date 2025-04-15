@@ -220,7 +220,7 @@ func getLagoonProjects(ctx context.Context, client *lagoon_client.Client) ([]sch
 // Lookup Lagoon projects
 func getLagoonProjectVar(ctx context.Context, client *lagoon_client.Client, projectName string, varName string) (string, error) {
 	vars := []schema.EnvKeyValue{}
-	err := client.GetEnvVariablesByProjectEnvironmentName(ctx, &schema.EnvVariableByProjectEnvironmentNameInput{Project: projectName}, &vars)
+	err := client.GetEnvVariablesByProjectEnvironmentName(ctx, &schema.EnvVariableByProjectEnvironmentNameInput{Project: projectName}, true, &vars)
 	for _, v := range vars {
 		if v.Name == varName {
 			return strings.ToLower(v.Value), nil
