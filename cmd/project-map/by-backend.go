@@ -43,6 +43,9 @@ func ByBackend(c *cli.Context) error {
 	} else {
 		args = helpers.GetAllArgs(c)
 	}
+	if len(args) == 0 {
+		return fmt.Errorf("no project specified, did you mean to add the --all flag?")
+	}
 
 	for _, v := range args {
 		project := &schema.ProjectMetadata{}
