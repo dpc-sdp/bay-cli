@@ -15,11 +15,13 @@ jobs:
         with:
           go-version: 'stable'
           cache: true
+      - name: Lint
+        run: make lint
       - name: Download dependencies
         run: go mod download
       - name: Verify dependencies
         run: go mod verify
       - name: Build
-        run: go build -v ./...
+        run: make build
       - name: Test
-        run: go test -v ./...
+        run: make test
