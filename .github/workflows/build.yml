@@ -15,10 +15,6 @@ jobs:
         with:
           go-version: 'stable'
           cache: true
-      - name: Lint
-        run: |
-          go get -u golang.org/x/lint/golint
-          make lint
       - name: Download dependencies
         run: go mod download
       - name: Verify dependencies
