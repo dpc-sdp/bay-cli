@@ -8,7 +8,7 @@ require (
 	github.com/alexeyco/simpletable v1.0.0
 	github.com/aws/aws-sdk-go-v2/config v1.29.14
 	github.com/aws/aws-sdk-go-v2/service/kms v1.38.3
-	github.com/elastic/go-elasticsearch/v8 v8.18.0
+	github.com/elastic/go-elasticsearch/v9 v9.0.0
 	github.com/elastic/go-elasticsearch/v9 v9.0.0
 	github.com/go-git/go-git/v5 v5.15.0
 	github.com/manifoldco/promptui v0.9.0
