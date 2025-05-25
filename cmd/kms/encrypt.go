@@ -3,7 +3,6 @@ package kms
 import (
 	"context"
 	b64 "encoding/base64"
-	"fmt"
 	"io"
 	"log"
 	"strings"
@@ -52,6 +51,6 @@ func Encrypt(c *cli.Context) error {
 		return errors.Wrap(err, "error encrypting payload with key")
 	}
 
-	fmt.Fprintf(c.App.Writer, b64.StdEncoding.EncodeToString(out.CiphertextBlob))
+	io.WriteString(c.App.Writer, b64.StdEncoding.EncodeToString(out.CiphertextBlob))
 	return nil
 }

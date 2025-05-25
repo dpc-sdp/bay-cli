@@ -6,6 +6,7 @@ import (
 	"github.com/alexeyco/simpletable"
 	"github.com/urfave/cli/v2"
 	"github.com/uselagoon/machinery/api/schema"
+	"io"
 
 	"github.com/dpc-sdp/bay-cli/internal/helpers"
 )
@@ -69,7 +70,7 @@ func ByFrontend(c *cli.Context) error {
 
 	if c.String("output") == "json" {
 		a, _ := json.Marshal(output)
-		fmt.Fprintf(c.App.Writer, string(a))
+		io.WriteString(c.App.Writer, string(a))
 	} else {
 		table := simpletable.New()
 
@@ -88,7 +89,7 @@ func ByFrontend(c *cli.Context) error {
 			table.Body.Cells = append(table.Body.Cells, r)
 		}
 		table.SetStyle(simpletable.StyleCompactLite)
-		fmt.Fprintf(c.App.Writer, table.String())
+		io.WriteString(c.App.Writer, table.String())
 	}
 
 	return nil
