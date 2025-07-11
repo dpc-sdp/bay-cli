@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	elasticsearch "github.com/elastic/go-elasticsearch/v8"
-	"github.com/elastic/go-elasticsearch/v8/esapi"
+	elasticsearch "github.com/elastic/go-elasticsearch/v9"
+	"github.com/elastic/go-elasticsearch/v9/esapi"
 	errors "github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 )
@@ -27,26 +27,28 @@ func ListUnassignedShards(c *cli.Context) error {
 		return err
 	}
 	shards, err := esapi.CatShardsRequest{Format: "json", FilterPath: []string{"index", "shard", "state"}}.Do(context.Background(), client)
+	if shards != nil {
+		shardsList := Shards{}
+		unassignedShards := Shards{}
 
-	shardsList := Shards{}
-	unassignedShards := Shards{}
-
-	if err := json.NewDecoder(shards.Body).Decode(&shardsList); err != nil {
-		return errors.Wrap(err, "Error parsing the response body")
-	} else {
-		for _, s := range shardsList {
-			if s.State == "UNASSIGNED" {
-				unassignedShards = append(unassignedShards, s)
+		if err := json.NewDecoder(shards.Body).Decode(&shardsList); err != nil {
+			return errors.Wrap(err, "Error parsing the response body")
+		} else {
+			for _, s := range shardsList {
+				if s.State == "UNASSIGNED" {
+					unassignedShards = append(unassignedShards, s)
+				}
 			}
+
+			if err != nil {
+				return err
+			}
+
+			json, _ := json.Marshal(unassignedShards)
+			fmt.Printf("%s", json)
+
+			return nil
 		}
-
-		if err != nil {
-			return err
-		}
-
-		json, _ := json.Marshal(unassignedShards)
-		fmt.Printf("%s", json)
-
-		return nil
 	}
+	return errors.New("no unassigned shards found")
 }
