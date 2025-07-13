@@ -110,6 +110,20 @@ func main() {
 				Name:   "elastic-cloud",
 				Usage:  "commands to interact with Elastic Cloud deployments",
 				Hidden: true,
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:     "deployment-id",
+						Usage:    "cloud deployment ID as listed on the Elastic Cloud 'manage' page",
+						Required: true,
+						EnvVars:  []string{"EC_DEPLOYMENT_CLOUD_ID"},
+					},
+					&cli.StringFlag{
+						Name:     "deployment-api-key",
+						Required: true,
+						Hidden:   true,
+						EnvVars:  []string{"EC_DEPLOYMENT_API_KEY"},
+					},
+				},
 				Subcommands: []*cli.Command{
 					{
 						Name:      "unassigned-shards",
@@ -131,18 +145,6 @@ func main() {
 							&cli.BoolFlag{
 								Name:  "output-delete-list",
 								Usage: "outputs a list of indices that would be deleted",
-							},
-							&cli.StringFlag{
-								Name:     "deployment-id",
-								Usage:    "cloud deployment ID as listed on the Elastic Cloud 'manage' page",
-								Required: true,
-								EnvVars:  []string{"EC_DEPLOYMENT_CLOUD_ID"},
-							},
-							&cli.StringFlag{
-								Name:     "deployment-api-key",
-								Required: true,
-								Hidden:   true,
-								EnvVars:  []string{"EC_DEPLOYMENT_API_KEY"},
 							},
 							&cli.Int64Flag{
 								Name:  "age",

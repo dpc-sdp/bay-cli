@@ -27,6 +27,9 @@ func ListUnassignedShards(c *cli.Context) error {
 		return err
 	}
 	shards, err := esapi.CatShardsRequest{Format: "json", FilterPath: []string{"index", "shard", "state"}}.Do(context.Background(), client)
+	if err != nil {
+		return err
+	}
 	if shards != nil {
 		shardsList := Shards{}
 		unassignedShards := Shards{}
