@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/dpc-sdp/bay-cli/internal/helpers"
-	elasticsearch "github.com/elastic/go-elasticsearch/v8"
-	"github.com/elastic/go-elasticsearch/v8/esapi"
+	elasticsearch "github.com/elastic/go-elasticsearch/v9"
+	"github.com/elastic/go-elasticsearch/v9/esapi"
 	"github.com/manifoldco/promptui"
 	errors "github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
