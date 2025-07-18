@@ -13,6 +13,7 @@ require (
 	github.com/manifoldco/promptui v0.9.0
 	github.com/pkg/errors v0.9.1
 	github.com/urfave/cli/v2 v2.27.7
+	github.com/urfave/cli/v3 v3.3.8
 	github.com/uselagoon/machinery v0.0.34
 	golang.org/x/crypto v0.39.0
 	gopkg.in/yaml.v3 v3.0.1
