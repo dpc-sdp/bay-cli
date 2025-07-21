@@ -8,11 +8,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/dpc-sdp/bay-cli/internal/helpers"
 	errors "github.com/pkg/errors"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
-func Decrypt(c *cli.Context) error {
-	inputContents, err := io.ReadAll(c.App.Reader)
+func Decrypt(ctx context.Context, c *cli.Command) error {
+	inputContents, err := io.ReadAll(c.Reader)
 	if err != nil {
 		return errors.Wrap(err, "unable to read input")
 	}
@@ -39,6 +39,6 @@ func Decrypt(c *cli.Context) error {
 		return errors.Wrap(err, "error decrypting payload")
 	}
 
-	io.WriteString(c.App.Writer, string(out.Plaintext))
+	io.WriteString(c.Writer, string(out.Plaintext))
 	return nil
 }

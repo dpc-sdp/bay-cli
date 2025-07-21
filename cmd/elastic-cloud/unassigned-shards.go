@@ -8,7 +8,7 @@ import (
 	elasticsearch "github.com/elastic/go-elasticsearch/v9"
 	"github.com/elastic/go-elasticsearch/v9/esapi"
 	errors "github.com/pkg/errors"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 type Shard struct {
@@ -19,7 +19,7 @@ type Shard struct {
 
 type Shards []Shard
 
-func ListUnassignedShards(c *cli.Context) error {
+func ListUnassignedShards(ctx context.Context, c *cli.Command) error {
 	apiKey := c.String("deployment-api-key")
 	cloudId := c.String("deployment-id")
 	client, err := elasticsearch.NewClient(elasticsearch.Config{APIKey: apiKey, CloudID: cloudId})

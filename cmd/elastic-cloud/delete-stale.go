@@ -13,7 +13,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v9/esapi"
 	"github.com/manifoldco/promptui"
 	errors "github.com/pkg/errors"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	lagoon_client "github.com/uselagoon/machinery/api/lagoon/client"
 	"github.com/uselagoon/machinery/api/schema"
 )
@@ -38,7 +38,7 @@ type Aliases struct {
 	Aliases map[string]AliasAttr `json:"aliases"`
 }
 
-func DeleteStaleIndices(c *cli.Context) error {
+func DeleteStaleIndices(ctx context.Context, c *cli.Command) error {
 	force := c.Bool("force")
 	apiKey := c.String("deployment-api-key")
 	cloudId := c.String("deployment-id")
@@ -108,12 +108,12 @@ func DeleteStaleIndices(c *cli.Context) error {
 						if len(aliasList[k].Aliases) > 0 {
 							if !outputDeleteList {
 								for aliasName := range aliasList[k].Aliases {
-									fmt.Fprintf(c.App.Writer, "The index %s is %d days old but will not be deleted because it has an associated alias %s\n", k, diffInDays, aliasName)
+									fmt.Fprintf(c.Writer, "The index %s is %d days old but will not be deleted because it has an associated alias %s\n", k, diffInDays, aliasName)
 								}
 							}
 						} else {
 							if !outputDeleteList {
-								fmt.Fprintf(c.App.Writer, "The index %s is %d days old and will be marked for deletion\n", k, diffInDays)
+								fmt.Fprintf(c.Writer, "The index %s is %d days old and will be marked for deletion\n", k, diffInDays)
 							}
 							deleteList = append(deleteList, k)
 						}
@@ -128,15 +128,15 @@ func DeleteStaleIndices(c *cli.Context) error {
 				fmt.Printf("%+s", string(json))
 			}
 			if force {
-				fmt.Fprint(c.App.Writer, "Deleting indices marked for deletion.")
+				fmt.Fprint(c.Writer, "Deleting indices marked for deletion.")
 				statusCode, err := deleteIndices(client, deleteList, i)
 				if err != nil {
 					return errors.Wrap(err, "error deleting indices")
 				} else {
 					if statusCode == 200 {
-						fmt.Fprintf(c.App.Writer, "Deletion request failed. Status code %d", statusCode)
+						fmt.Fprintf(c.Writer, "Deletion request failed. Status code %d", statusCode)
 					} else {
-						fmt.Fprintf(c.App.Writer, "%+v indices successfully deleted.", i)
+						fmt.Fprintf(c.Writer, "%+v indices successfully deleted.", i)
 					}
 				}
 			} else {
