@@ -1,11 +1,12 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 
 	"github.com/dpc-sdp/bay-cli/cmd/kms"
-	cli "github.com/urfave/cli/v2"
+	cli "github.com/urfave/cli/v3"
 
 	deployment "github.com/dpc-sdp/bay-cli/cmd/deployment"
 	elastic_cloud "github.com/dpc-sdp/bay-cli/cmd/elastic-cloud"
@@ -18,14 +19,14 @@ const (
 )
 
 func main() {
-	app := &cli.App{
+	app := &cli.Command{
 		Name:  "bay",
 		Usage: "CLI tool to interact with the Bay container platform",
 		Commands: []*cli.Command{
 			{
 				Name:  "kms",
 				Usage: "interact with KMS encryption service",
-				Subcommands: []*cli.Command{
+				Commands: []*cli.Command{
 					{
 						Name:      "encrypt",
 						Usage:     "encrypt data",
@@ -34,13 +35,13 @@ func main() {
 							&cli.StringFlag{
 								Name:     "project",
 								Usage:    "Name of lagoon project",
-								EnvVars:  []string{EnvLagoonProject},
+								Sources:  cli.EnvVars(EnvLagoonProject),
 								Required: true,
 							},
 							&cli.StringFlag{
 								Name:     "key",
 								Usage:    "Name of key",
-								EnvVars:  []string{EnvLagoonEnvironmentType},
+								Sources:  cli.EnvVars(EnvLagoonEnvironmentType),
 								Required: true,
 							},
 						},
@@ -57,7 +58,7 @@ func main() {
 			{
 				Name:  "project-map",
 				Usage: "commands to show relationships between projects",
-				Subcommands: []*cli.Command{
+				Commands: []*cli.Command{
 					{
 						Name:      "by-backend",
 						Usage:     "shows all frontends that connect to a specific backend",
@@ -97,7 +98,7 @@ func main() {
 			{
 				Name:  "deployment",
 				Usage: "commands for deployment actions",
-				Subcommands: []*cli.Command{
+				Commands: []*cli.Command{
 					{
 						Name:      "metadata",
 						Usage:     "generates a json object with deployment metadata",
@@ -115,16 +116,16 @@ func main() {
 						Name:     "deployment-id",
 						Usage:    "cloud deployment ID as listed on the Elastic Cloud 'manage' page",
 						Required: true,
-						EnvVars:  []string{"EC_DEPLOYMENT_CLOUD_ID"},
+						Sources:  cli.EnvVars("EC_DEPLOYMENT_CLOUD_ID"),
 					},
 					&cli.StringFlag{
 						Name:     "deployment-api-key",
 						Required: true,
 						Hidden:   true,
-						EnvVars:  []string{"EC_DEPLOYMENT_API_KEY"},
+						Sources:  cli.EnvVars("EC_DEPLOYMENT_API_KEY"),
 					},
 				},
-				Subcommands: []*cli.Command{
+				Commands: []*cli.Command{
 					{
 						Name:      "unassigned-shards",
 						Usage:     "Prints unassigned shards in JSON format",
@@ -158,7 +159,7 @@ func main() {
 		},
 	}
 
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(context.Background(), os.Args); err != nil {
 		log.Fatal(err)
 	}
 }

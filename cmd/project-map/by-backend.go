@@ -1,13 +1,14 @@
 package project_map
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
 
 	"github.com/alexeyco/simpletable"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"github.com/uselagoon/machinery/api/schema"
 
 	"github.com/dpc-sdp/bay-cli/internal/helpers"
@@ -22,7 +23,7 @@ type ByBackendResponseItem struct {
 	FrontEnds []string `json:"frontends"`
 }
 
-func ByBackend(c *cli.Context) error {
+func ByBackend(ctx context.Context, c *cli.Command) error {
 	client, err := helpers.NewLagoonClient(nil)
 	if err != nil {
 		return err
@@ -34,7 +35,7 @@ func ByBackend(c *cli.Context) error {
 	args := make([]string, 0)
 	if all {
 		projects := make([]schema.ProjectMetadata, 0)
-		err = client.ProjectsByMetadata(c.Context, "type", "tide", &projects)
+		err = client.ProjectsByMetadata(ctx, "type", "tide", &projects)
 		if err != nil {
 			return err
 		}
@@ -50,13 +51,13 @@ func ByBackend(c *cli.Context) error {
 
 	for _, v := range args {
 		project := &schema.ProjectMetadata{}
-		err := client.ProjectByNameMetadata(c.Context, v, project)
+		err := client.ProjectByNameMetadata(ctx, v, project)
 		if err != nil {
 			return err
 		}
 
 		projects := make([]schema.ProjectMetadata, 0)
-		err = client.ProjectsByMetadata(c.Context, "backend-project", v, &projects)
+		err = client.ProjectsByMetadata(ctx, "backend-project", v, &projects)
 		if err != nil {
 			return err
 		}
@@ -75,7 +76,7 @@ func ByBackend(c *cli.Context) error {
 
 	if c.String("output") == "json" {
 		a, _ := json.Marshal(output)
-		io.WriteString(c.App.Writer, string(a))
+		io.WriteString(c.Writer, string(a))
 	} else {
 		table := simpletable.New()
 
@@ -94,7 +95,7 @@ func ByBackend(c *cli.Context) error {
 			table.Body.Cells = append(table.Body.Cells, r)
 		}
 		table.SetStyle(simpletable.StyleCompactLite)
-		io.WriteString(c.App.Writer, table.String())
+		io.WriteString(c.Writer, table.String())
 	}
 
 	return nil

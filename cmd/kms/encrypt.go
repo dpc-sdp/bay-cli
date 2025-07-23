@@ -10,13 +10,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/dpc-sdp/bay-cli/internal/helpers"
 	errors "github.com/pkg/errors"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
-func Encrypt(c *cli.Context) error {
-	logger := log.New(c.App.ErrWriter, "", log.LstdFlags)
+func Encrypt(ctx context.Context, c *cli.Command) error {
+	logger := log.New(c.ErrWriter, "", log.LstdFlags)
 
-	inputContents, err := io.ReadAll(c.App.Reader)
+	inputContents, err := io.ReadAll(c.Reader)
 	if err != nil {
 		return errors.Wrap(err, "unable to read input")
 	}
@@ -51,6 +51,6 @@ func Encrypt(c *cli.Context) error {
 		return errors.Wrap(err, "error encrypting payload with key")
 	}
 
-	io.WriteString(c.App.Writer, b64.StdEncoding.EncodeToString(out.CiphertextBlob))
+	io.WriteString(c.Writer, b64.StdEncoding.EncodeToString(out.CiphertextBlob))
 	return nil
 }

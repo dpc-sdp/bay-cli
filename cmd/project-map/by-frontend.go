@@ -1,10 +1,11 @@
 package project_map
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/alexeyco/simpletable"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 	"github.com/uselagoon/machinery/api/schema"
 	"io"
 
@@ -15,7 +16,7 @@ type ByFrontendResponse struct {
 	Items map[string]string `json:"items"`
 }
 
-func ByFrontend(c *cli.Context) error {
+func ByFrontend(ctx context.Context, c *cli.Command) error {
 	client, err := helpers.NewLagoonClient(nil)
 	if err != nil {
 		return err
@@ -30,7 +31,7 @@ func ByFrontend(c *cli.Context) error {
 	if all {
 		// @todo once all frontends are on ripple 2, remove the obsolete check.
 		rippleProjects := make([]schema.ProjectMetadata, 0)
-		err = client.ProjectsByMetadata(c.Context, "type", "ripple", &rippleProjects)
+		err = client.ProjectsByMetadata(ctx, "type", "ripple", &rippleProjects)
 		if err != nil {
 			return err
 		}
@@ -39,7 +40,7 @@ func ByFrontend(c *cli.Context) error {
 		}
 
 		ripple2Projects := make([]schema.ProjectMetadata, 0)
-		err = client.ProjectsByMetadata(c.Context, "type", "ripple2", &ripple2Projects)
+		err = client.ProjectsByMetadata(ctx, "type", "ripple2", &ripple2Projects)
 		if err != nil {
 			return err
 		}
@@ -57,7 +58,7 @@ func ByFrontend(c *cli.Context) error {
 	for _, v := range args {
 		project := &schema.ProjectMetadata{}
 
-		err := client.ProjectByNameMetadata(c.Context, v, project)
+		err := client.ProjectByNameMetadata(ctx, v, project)
 		if err != nil {
 			return err
 		}
@@ -70,7 +71,7 @@ func ByFrontend(c *cli.Context) error {
 
 	if c.String("output") == "json" {
 		a, _ := json.Marshal(output)
-		io.WriteString(c.App.Writer, string(a))
+		io.WriteString(c.Writer, string(a))
 	} else {
 		table := simpletable.New()
 
@@ -89,7 +90,7 @@ func ByFrontend(c *cli.Context) error {
 			table.Body.Cells = append(table.Body.Cells, r)
 		}
 		table.SetStyle(simpletable.StyleCompactLite)
-		io.WriteString(c.App.Writer, table.String())
+		io.WriteString(c.Writer, table.String())
 	}
 
 	return nil

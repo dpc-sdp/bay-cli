@@ -1,13 +1,14 @@
 package deployment
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/go-git/go-git/v5"
 	errors "github.com/pkg/errors"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 type Metadata struct {
@@ -22,7 +23,7 @@ type Deployment struct {
 	Msg        string `json:"msg"`
 }
 
-func DeploymentMetadata(c *cli.Context) error {
+func DeploymentMetadata(ctx context.Context, c *cli.Command) error {
 	repo, err := git.PlainOpenWithOptions(".", &git.PlainOpenOptions{DetectDotGit: true})
 	if err != nil {
 		return errors.Wrap(err, "unable to open git repository")
@@ -65,7 +66,7 @@ func DeploymentMetadata(c *cli.Context) error {
 	json, _ := json.Marshal(md)
 
 	// Write string to stdout
-	fmt.Fprintf(c.App.Writer, "%s", json)
+	fmt.Fprintf(c.Writer, "%s", json)
 
 	return nil
 }
