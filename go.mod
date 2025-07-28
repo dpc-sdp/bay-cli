@@ -7,7 +7,7 @@ toolchain go1.24.5
 require (
 	github.com/alexeyco/simpletable v1.0.0
 	github.com/aws/aws-sdk-go-v2/config v1.29.18
-	github.com/aws/aws-sdk-go-v2/service/kms v1.41.3
+	github.com/aws/aws-sdk-go-v2/service/kms v1.41.4
 	github.com/elastic/go-elasticsearch/v9 v9.0.0
 	github.com/go-git/go-git/v5 v5.16.2
 	github.com/manifoldco/promptui v0.9.0
