@@ -21,6 +21,20 @@ This will store the encrypted file at `keys/production/oauth.pem.asc`.
 cat oauth.pen.asc | bay kms decrypt > oauth.pem
 ```
 
+## s3
+
+Commands for pushing and pulling objects to the bay s3 buckets. 
+
+### Usage
+
+Pull file from bay-db-image bucket.
+
+```
+bay filestore pull \ 
+    --remote-path s3://bay-db-image/project-name/production.sql \
+    --local-path project-name-production.sql
+```
+
 ## Elastic Cloud
 Commands for querying and interacting with the Elastic Cloud API.
 
