@@ -21,28 +21,19 @@ This will store the encrypted file at `keys/production/oauth.pem.asc`.
 cat oauth.pen.asc | bay kms decrypt > oauth.pem
 ```
 
-## Dropbox
+## s3
 
-Commands for pushing and pulling objects to the bay dropbox bucket. Projects can push and pull any files underneath their [project-name] directory in the dropbox bucket.
+Commands for pushing and pulling objects to the bay s3 buckets. 
 
 ### Usage
 
-Pull files from dropbox bucket.
+Pull file from bay-db-image bucket.
 
 ```
-bay dropbox pull \ 
-    --remote-path project-name/file.zip \
-    --local-path file.zip
+bay filestore pull \ 
+    --remote-path s3://bay-db-image/project-name/production.sql \
+    --local-path project-name-production.sql
 ```
-
-Push files to dropbox bucket.
-
-```
-bay dropbox push \ 
-    --local-path file.zip \
-    --remote-path project-name/file.zip
-```
-
 
 ## Elastic Cloud
 Commands for querying and interacting with the Elastic Cloud API.

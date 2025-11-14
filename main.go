@@ -10,6 +10,7 @@ import (
 
 	deployment "github.com/dpc-sdp/bay-cli/cmd/deployment"
 	elastic_cloud "github.com/dpc-sdp/bay-cli/cmd/elastic-cloud"
+	filestore "github.com/dpc-sdp/bay-cli/cmd/filestore"
 	project_map "github.com/dpc-sdp/bay-cli/cmd/project-map"
 )
 
@@ -46,6 +47,44 @@ func main() {
 							},
 						},
 						Action: kms.Encrypt,
+					},
+					{
+						Name:      "decrypt",
+						Usage:     "decrypt a file",
+						UsageText: "cat file.pem.asc | bay kms decrypt > file.pem",
+						Action:    kms.Decrypt,
+					},
+				},
+			},
+			{
+				Name:  "filestore",
+				Usage: "interact with bay s3 storage service",
+				Commands: []*cli.Command{
+					{
+						Name:      "pull",
+						Usage:     "pull object from s3",
+						UsageText: "bay filestore pull --remote-path s3://bucket/path/to/file.txt --local-path /path/to/file.txt",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:     "remote-path",
+								Usage:    "remote path",
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:     "local-path",
+								Usage:    "local path",
+								Required: true,
+							},
+							&cli.BoolFlag{
+								Name:  "ignore-checksum",
+								Usage: "ignore checksum when pulling file from s3",
+							},
+							&cli.BoolFlag{
+								Name:  "verbose",
+								Usage: "verbose output",
+							},
+						},
+						Action: filestore.Pull,
 					},
 					{
 						Name:      "decrypt",
