@@ -2,19 +2,19 @@ module github.com/dpc-sdp/bay-cli
 
 go 1.24.0
 
-toolchain go1.25.6
+toolchain go1.26.0
 
 require (
 	github.com/alexeyco/simpletable v1.0.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.7
 	github.com/aws/aws-sdk-go-v2/service/kms v1.49.5
-	github.com/elastic/go-elasticsearch/v9 v9.2.1
+	github.com/elastic/go-elasticsearch/v9 v9.3.1
 	github.com/go-git/go-git/v5 v5.16.4
 	github.com/manifoldco/promptui v0.9.0
 	github.com/pkg/errors v0.9.1
 	github.com/urfave/cli/v3 v3.6.2
 	github.com/uselagoon/machinery v0.0.34
-	golang.org/x/crypto v0.47.0
+	golang.org/x/crypto v0.48.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -63,7 +63,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.35.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.33.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
-	golang.org/x/net v0.48.0 // indirect
-	golang.org/x/sys v0.40.0 // indirect
+	golang.org/x/net v0.49.0 // indirect
+	golang.org/x/sys v0.41.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
