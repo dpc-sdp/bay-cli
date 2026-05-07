@@ -24,7 +24,7 @@ type ProjectMetadata struct {
 	ProjectName          string `json:"project"`
 	Type                 string `json:"type"`
 	Maintainer           string `json:"maintainer"`
-	SectionIoApplication string `json:"sectionio-application"`
+	SectionIoApplication string `json:"section-io-application"`
 	ApexDomain           string `json:"apex-domain"`
 	BackendProject       string `json:"backend-project"`
 	ProductionDomain     string `json:"production-domain"`
@@ -128,7 +128,7 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 			ProjectName:          project.Name,
 			Type:                 project.Metadata["type"],
 			Maintainer:           project.Metadata["maintainer"],
-			SectionIoApplication: project.Metadata["sectionio-application"],
+			SectionIoApplication: project.Metadata["section-io-application"],
 			ApexDomain:           project.Metadata["apex-domain"],
 			BackendProject:       project.Metadata["backend-project"],
 			ProductionDomain:     project.Metadata["production-domain"],
