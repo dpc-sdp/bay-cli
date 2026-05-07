@@ -111,6 +111,10 @@ func main() {
 						DefaultText: "all",
 						Value:       "all",
 					},
+					&cli.BoolFlag{
+						Name:  "include-facts",
+						Usage: "Include project facts (base image, Drupal version, etc.)",
+					},
 					&cli.StringFlag{
 						Name:        "output",
 						Usage:       "Output format - supports json, table, csv",

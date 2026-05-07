@@ -21,13 +21,35 @@ type Response struct {
 }
 
 type ProjectMetadata struct {
-	ProjectName          string `json:"project"`
-	Type                 string `json:"type"`
-	Maintainer           string `json:"maintainer"`
-	SectionIoApplication string `json:"section-io-application"`
-	ApexDomain           string `json:"apex-domain"`
-	BackendProject       string `json:"backend-project"`
-	ProductionDomain     string `json:"production-domain"`
+	ProjectName          string            `json:"project"`
+	Type                 string            `json:"type"`
+	Maintainer           string            `json:"maintainer"`
+	SectionIoApplication string            `json:"section-io-application"`
+	ApexDomain           string            `json:"apex-domain"`
+	BackendProject       string            `json:"backend-project"`
+	ProductionDomain     string            `json:"production-domain"`
+	Facts                map[string]string `json:"facts,omitempty"`
+}
+
+// Fact represents a single fact from the Lagoon API
+type Fact struct {
+	Name        string `json:"name"`
+	Value       string `json:"value"`
+	Description string `json:"description"`
+}
+
+// Environment represents an environment with facts
+type Environment struct {
+	Name  string `json:"name"`
+	Facts []Fact `json:"facts"`
+}
+
+// ProjectByNameResponse represents the response from the ProjectByName query
+type ProjectByNameResponse struct {
+	ProjectByName struct {
+		Name         string        `json:"name"`
+		Environments []Environment `json:"environments"`
+	} `json:"projectByName"`
 }
 
 // parseTypes parses a comma-separated string of types and returns a slice of types
@@ -87,6 +109,7 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 
 	all := c.Bool("all")
 	metadataType := c.String("type")
+	includeFacts := c.Bool("include-facts")
 	args := make([]string, 0)
 
 	// Parse the type parameter to handle comma-separated values
@@ -124,6 +147,13 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 			return err
 		}
 
+		// Get extended project info to access productionEnvironment field
+		extendedProject := &schema.Project{}
+		err = client.ProjectByNameExtended(ctx, v, extendedProject)
+		if err != nil {
+			return err
+		}
+
 		item := ProjectMetadata{
 			ProjectName:          project.Name,
 			Type:                 project.Metadata["type"],
@@ -132,6 +162,75 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 			ApexDomain:           project.Metadata["apex-domain"],
 			BackendProject:       project.Metadata["backend-project"],
 			ProductionDomain:     project.Metadata["production-domain"],
+		}
+
+		// Fetch facts if requested
+		if includeFacts {
+			facts := make(map[string]string)
+
+			// Use the specific GraphQL query to fetch facts from production environment
+			query := `
+				query ProjectByName(
+					$name: String!
+					$type: EnvType
+					$keyFacts: Boolean
+					$summary: Boolean
+				) {
+					projectByName(name: $name) {
+						name
+						environments(type: $type) {
+							name
+							facts(keyFacts: $keyFacts, summary: $summary) {
+								name
+								value
+								description
+							}
+						}
+					}
+				}
+			`
+
+			variables := map[string]interface{}{
+				"name":     project.Name,
+				"type":     "PRODUCTION",
+				"keyFacts": true,
+				"summary":  false,
+			}
+
+			response, err := client.ProcessRaw(ctx, query, variables)
+			if err != nil {
+				facts["status"] = fmt.Sprintf("Unable to fetch facts: %v", err)
+			} else {
+				// Parse the response
+				responseBytes, err := json.Marshal(response)
+				if err != nil {
+					facts["status"] = fmt.Sprintf("Unable to marshal response: %v", err)
+				} else {
+					var projectResponse ProjectByNameResponse
+					err = json.Unmarshal(responseBytes, &projectResponse)
+					if err != nil {
+						facts["status"] = fmt.Sprintf("Unable to parse response: %v", err)
+					} else {
+						// Extract facts from production environments
+						if len(projectResponse.ProjectByName.Environments) > 0 {
+							for _, env := range projectResponse.ProjectByName.Environments {
+								for _, fact := range env.Facts {
+									if fact.Name != "" && fact.Value != "" {
+										facts[fact.Name] = fact.Value
+									}
+								}
+							}
+							if len(facts) == 0 {
+								facts["status"] = "No facts available for production environment"
+							}
+						} else {
+							facts["status"] = "No production environment found"
+						}
+					}
+				}
+			}
+
+			item.Facts = facts
 		}
 
 		output.Items = append(output.Items, item)
@@ -154,6 +253,9 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 			"Backend Project",
 			"Production Domain",
 		}
+		if includeFacts {
+			header = append(header, "Facts")
+		}
 		writer.Write(header)
 
 		// Write CSV data rows
@@ -167,21 +269,37 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 				item.BackendProject,
 				item.ProductionDomain,
 			}
+			if includeFacts {
+				factsStr := ""
+				if item.Facts != nil {
+					for key, value := range item.Facts {
+						if factsStr != "" {
+							factsStr += "; "
+						}
+						factsStr += fmt.Sprintf("%s: %s", key, value)
+					}
+				}
+				record = append(record, factsStr)
+			}
 			writer.Write(record)
 		}
 	} else {
 		table := simpletable.New()
 
+		headerCells := []*simpletable.Cell{
+			{Align: simpletable.AlignLeft, Text: "Project"},
+			{Align: simpletable.AlignLeft, Text: "Type"},
+			{Align: simpletable.AlignLeft, Text: "Maintainer"},
+			{Align: simpletable.AlignLeft, Text: "SectionIO App"},
+			{Align: simpletable.AlignLeft, Text: "Apex Domain"},
+			{Align: simpletable.AlignLeft, Text: "Backend Project"},
+			{Align: simpletable.AlignLeft, Text: "Production Domain"},
+		}
+		if includeFacts {
+			headerCells = append(headerCells, &simpletable.Cell{Align: simpletable.AlignLeft, Text: "Facts"})
+		}
 		table.Header = &simpletable.Header{
-			Cells: []*simpletable.Cell{
-				{Align: simpletable.AlignLeft, Text: "Project"},
-				{Align: simpletable.AlignLeft, Text: "Type"},
-				{Align: simpletable.AlignLeft, Text: "Maintainer"},
-				{Align: simpletable.AlignLeft, Text: "SectionIO App"},
-				{Align: simpletable.AlignLeft, Text: "Apex Domain"},
-				{Align: simpletable.AlignLeft, Text: "Backend Project"},
-				{Align: simpletable.AlignLeft, Text: "Production Domain"},
-			},
+			Cells: headerCells,
 		}
 
 		for _, item := range output.Items {
@@ -193,6 +311,18 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 				{Text: item.ApexDomain},
 				{Text: item.BackendProject},
 				{Text: item.ProductionDomain},
+			}
+			if includeFacts {
+				factsStr := ""
+				if item.Facts != nil {
+					for key, value := range item.Facts {
+						if factsStr != "" {
+							factsStr += "\n"
+						}
+						factsStr += fmt.Sprintf("%s: %s", key, value)
+					}
+				}
+				r = append(r, &simpletable.Cell{Text: factsStr})
 			}
 			table.Body.Cells = append(table.Body.Cells, r)
 		}
