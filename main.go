@@ -11,6 +11,7 @@ import (
 	deployment "github.com/dpc-sdp/bay-cli/cmd/deployment"
 	elastic_cloud "github.com/dpc-sdp/bay-cli/cmd/elastic-cloud"
 	project_map "github.com/dpc-sdp/bay-cli/cmd/project-map"
+	project_metadata "github.com/dpc-sdp/bay-cli/cmd/project-metadata"
 )
 
 const (
@@ -94,6 +95,29 @@ func main() {
 						Action: project_map.ByFrontend,
 					},
 				},
+			},
+			{
+				Name:      "project-metadata",
+				Usage:     "shows metadata for a project",
+				UsageText: "bay project-metadata --all --type=tide",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:  "all",
+						Usage: "List all projects",
+					},
+					&cli.StringFlag{
+						Name:        "type",
+						Usage:       "Filter projects by metadata type",
+						DefaultText: "all",
+						Value:       "all",
+					},
+					&cli.StringFlag{
+						Name:        "output",
+						Usage:       "Output format - supports json, table, csv",
+						DefaultText: "table",
+					},
+				},
+				Action: project_metadata.Metadata,
 			},
 			{
 				Name:  "deployment",
