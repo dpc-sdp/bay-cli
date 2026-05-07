@@ -113,7 +113,7 @@ func main() {
 					},
 					&cli.StringFlag{
 						Name:        "output",
-						Usage:       "Output format - supports json, table",
+						Usage:       "Output format - supports json, table, csv",
 						DefaultText: "table",
 					},
 				},

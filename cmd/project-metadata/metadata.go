@@ -2,6 +2,7 @@ package project_metadata
 
 import (
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,8 +10,8 @@ import (
 
 	"github.com/alexeyco/simpletable"
 	"github.com/urfave/cli/v3"
-	"github.com/uselagoon/machinery/api/schema"
 	lagoon_client "github.com/uselagoon/machinery/api/lagoon/client"
+	"github.com/uselagoon/machinery/api/schema"
 
 	"github.com/dpc-sdp/bay-cli/internal/helpers"
 )
@@ -139,6 +140,35 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 	if c.String("output") == "json" {
 		a, _ := json.Marshal(output)
 		io.WriteString(c.Writer, string(a))
+	} else if c.String("output") == "csv" {
+		writer := csv.NewWriter(c.Writer)
+		defer writer.Flush()
+
+		// Write CSV header
+		header := []string{
+			"Project",
+			"Type",
+			"Maintainer",
+			"SectionIO App",
+			"Apex Domain",
+			"Backend Project",
+			"Production Domain",
+		}
+		writer.Write(header)
+
+		// Write CSV data rows
+		for _, item := range output.Items {
+			record := []string{
+				item.ProjectName,
+				item.Type,
+				item.Maintainer,
+				item.SectionIoApplication,
+				item.ApexDomain,
+				item.BackendProject,
+				item.ProductionDomain,
+			}
+			writer.Write(record)
+		}
 	} else {
 		table := simpletable.New()
 
