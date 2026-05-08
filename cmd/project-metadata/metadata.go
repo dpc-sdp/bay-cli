@@ -206,25 +206,31 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 				if err != nil {
 					facts["status"] = fmt.Sprintf("Unable to marshal response: %v", err)
 				} else {
-					var projectResponse ProjectByNameResponse
-					err = json.Unmarshal(responseBytes, &projectResponse)
-					if err != nil {
-						facts["status"] = fmt.Sprintf("Unable to parse response: %v", err)
+					// Check if the response looks like HTML (error page)
+					responseStr := string(responseBytes)
+					if strings.HasPrefix(responseStr, "\"<") || strings.Contains(responseStr, "<html") {
+						facts["status"] = "GraphQL API returned HTML error page instead of JSON"
 					} else {
-						// Extract facts from production environments
-						if len(projectResponse.ProjectByName.Environments) > 0 {
-							for _, env := range projectResponse.ProjectByName.Environments {
-								for _, fact := range env.Facts {
-									if fact.Name != "" && fact.Value != "" {
-										facts[fact.Name] = fact.Value
+						var projectResponse ProjectByNameResponse
+						err = json.Unmarshal(responseBytes, &projectResponse)
+						if err != nil {
+							facts["status"] = fmt.Sprintf("Unable to parse response: %v", err)
+						} else {
+							// Extract facts from production environments
+							if len(projectResponse.ProjectByName.Environments) > 0 {
+								for _, env := range projectResponse.ProjectByName.Environments {
+									for _, fact := range env.Facts {
+										if fact.Name != "" && fact.Value != "" {
+											facts[fact.Name] = fact.Value
+										}
 									}
 								}
+								if len(facts) == 0 {
+									facts["status"] = "No facts available for production environment"
+								}
+							} else {
+								facts["status"] = "No production environment found"
 							}
-							if len(facts) == 0 {
-								facts["status"] = "No facts available for production environment"
-							}
-						} else {
-							facts["status"] = "No production environment found"
 						}
 					}
 				}
