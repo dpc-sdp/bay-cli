@@ -29,6 +29,7 @@ type ProjectMetadata struct {
 	BackendProject       string            `json:"backend-project"`
 	ProductionDomain     string            `json:"production-domain"`
 	Facts                map[string]string `json:"facts,omitempty"`
+	IndividualFacts      map[string]string `json:"individual_facts,omitempty"`
 }
 
 // Fact represents a single fact from the Lagoon API
@@ -65,6 +66,21 @@ func parseTypes(typeStr string) []string {
 	}
 
 	return types
+}
+
+// parseFactTypes parses a comma-separated string of fact types and returns a slice of fact types
+func parseFactTypes(factTypesStr string) []string {
+	if factTypesStr == "" {
+		return []string{}
+	}
+
+	// Split by comma and trim whitespace
+	factTypes := strings.Split(factTypesStr, ",")
+	for i, t := range factTypes {
+		factTypes[i] = strings.TrimSpace(t)
+	}
+
+	return factTypes
 }
 
 // getProjectsByTypes fetches projects for multiple types
@@ -110,10 +126,15 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 	all := c.Bool("all")
 	metadataType := c.String("type")
 	includeFacts := c.Bool("include-facts")
+	factTypesStr := c.String("fact-types")
 	args := make([]string, 0)
 
 	// Parse the type parameter to handle comma-separated values
 	types := parseTypes(metadataType)
+
+	// Parse the fact-types parameter to handle comma-separated values
+	factTypes := parseFactTypes(factTypesStr)
+	useIndividualFacts := len(factTypes) > 0
 
 	if all {
 		// Get projects for all specified types
@@ -144,6 +165,13 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 		project := &schema.ProjectMetadata{}
 		err := client.ProjectByNameMetadata(ctx, v, project)
 		if err != nil {
+			// Check if this is the throttling error we're looking for
+			errStr := err.Error()
+			if strings.Contains(errStr, "invalid character '<' looking for beginning of value") {
+				return fmt.Errorf("API throttling detected - server returned HTML instead of JSON. Error: %v", err)
+			} else if strings.Contains(errStr, "decoding response") {
+				return fmt.Errorf("API response decoding error - possible throttling or server issue. Error: %v", err)
+			}
 			return err
 		}
 
@@ -151,6 +179,13 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 		extendedProject := &schema.Project{}
 		err = client.ProjectByNameExtended(ctx, v, extendedProject)
 		if err != nil {
+			// Check if this is the throttling error we're looking for
+			errStr := err.Error()
+			if strings.Contains(errStr, "invalid character '<' looking for beginning of value") {
+				return fmt.Errorf("API throttling detected during extended project fetch - server returned HTML instead of JSON. Error: %v", err)
+			} else if strings.Contains(errStr, "decoding response") {
+				return fmt.Errorf("API response decoding error during extended project fetch - possible throttling or server issue. Error: %v", err)
+			}
 			return err
 		}
 
@@ -164,9 +199,10 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 			ProductionDomain:     project.Metadata["production-domain"],
 		}
 
-		// Fetch facts if requested
-		if includeFacts {
+		// Fetch facts if requested or if individual fact types are specified
+		if includeFacts || useIndividualFacts {
 			facts := make(map[string]string)
+			individualFacts := make(map[string]string)
 
 			// Use the specific GraphQL query to fetch facts from production environment
 			query := `
@@ -199,7 +235,27 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 
 			response, err := client.ProcessRaw(ctx, query, variables)
 			if err != nil {
-				facts["status"] = fmt.Sprintf("Unable to fetch facts: %v", err)
+				// Capture full error details for debugging
+				errStr := err.Error()
+				facts["error_type"] = "ProcessRaw_Error"
+				facts["full_error"] = errStr
+
+				// Check for specific error patterns
+				if strings.Contains(errStr, "invalid character '<'") || strings.Contains(errStr, "decoding response") {
+					facts["status"] = "API returned HTML error page - possible throttling or server error"
+					// Try to extract more details from the error
+					if strings.Contains(errStr, "invalid character '<' looking for beginning of value") {
+						facts["likely_cause"] = "HTML_response_instead_of_JSON"
+					}
+				} else if strings.Contains(strings.ToLower(errStr), "throttl") || strings.Contains(strings.ToLower(errStr), "rate limit") {
+					facts["status"] = "API throttling detected"
+					facts["likely_cause"] = "Rate_limiting"
+				} else if strings.Contains(strings.ToLower(errStr), "timeout") {
+					facts["status"] = "Request timeout"
+					facts["likely_cause"] = "Timeout"
+				} else {
+					facts["status"] = fmt.Sprintf("Unable to fetch facts: %v", err)
+				}
 			} else {
 				// Parse the response
 				responseBytes, err := json.Marshal(response)
@@ -219,24 +275,48 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 							// Extract facts from production environments
 							if len(projectResponse.ProjectByName.Environments) > 0 {
 								for _, env := range projectResponse.ProjectByName.Environments {
-									for _, fact := range env.Facts {
-										if fact.Name != "" && fact.Value != "" {
-											facts[fact.Name] = fact.Value
+									if env.Name == "production" || env.Name == "master" {
+										for _, fact := range env.Facts {
+											if fact.Name != "" && fact.Value != "" {
+												// Always store in facts for backward compatibility
+												if includeFacts {
+													facts[fact.Name] = fact.Value
+												}
+
+												// Store individual facts if specific types are requested
+												if useIndividualFacts {
+													for _, requestedType := range factTypes {
+														if fact.Name == requestedType {
+															individualFacts[fact.Name] = fact.Value
+															break
+														}
+													}
+												}
+											}
 										}
+									} else {
+										continue
 									}
 								}
-								if len(facts) == 0 {
+								if includeFacts && len(facts) == 0 {
 									facts["status"] = "No facts available for production environment"
 								}
 							} else {
-								facts["status"] = "No production environment found"
+								if includeFacts {
+									facts["status"] = "No production environment found"
+								}
 							}
 						}
 					}
 				}
 			}
 
-			item.Facts = facts
+			if includeFacts {
+				item.Facts = facts
+			}
+			if useIndividualFacts {
+				item.IndividualFacts = individualFacts
+			}
 		}
 
 		output.Items = append(output.Items, item)
@@ -261,6 +341,11 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 		}
 		if includeFacts {
 			header = append(header, "Facts")
+		}
+		if useIndividualFacts {
+			for _, factType := range factTypes {
+				header = append(header, factType)
+			}
 		}
 		writer.Write(header)
 
@@ -287,6 +372,17 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 				}
 				record = append(record, factsStr)
 			}
+			if useIndividualFacts {
+				for _, factType := range factTypes {
+					value := ""
+					if item.IndividualFacts != nil {
+						if val, exists := item.IndividualFacts[factType]; exists {
+							value = val
+						}
+					}
+					record = append(record, value)
+				}
+			}
 			writer.Write(record)
 		}
 	} else {
@@ -303,6 +399,11 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 		}
 		if includeFacts {
 			headerCells = append(headerCells, &simpletable.Cell{Align: simpletable.AlignLeft, Text: "Facts"})
+		}
+		if useIndividualFacts {
+			for _, factType := range factTypes {
+				headerCells = append(headerCells, &simpletable.Cell{Align: simpletable.AlignLeft, Text: factType})
+			}
 		}
 		table.Header = &simpletable.Header{
 			Cells: headerCells,
@@ -329,6 +430,17 @@ func Metadata(ctx context.Context, c *cli.Command) error {
 					}
 				}
 				r = append(r, &simpletable.Cell{Text: factsStr})
+			}
+			if useIndividualFacts {
+				for _, factType := range factTypes {
+					value := ""
+					if item.IndividualFacts != nil {
+						if val, exists := item.IndividualFacts[factType]; exists {
+							value = val
+						}
+					}
+					r = append(r, &simpletable.Cell{Text: value})
+				}
 			}
 			table.Body.Cells = append(table.Body.Cells, r)
 		}
