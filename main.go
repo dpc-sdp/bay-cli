@@ -116,6 +116,10 @@ func main() {
 						Usage: "Include project facts (base image, Drupal version, etc.)",
 					},
 					&cli.StringFlag{
+						Name:  "fact-types",
+						Usage: "Filter facts by type and display in separate columns (comma-separated: PHP,Drupal,Alpine Linux,etc.)",
+					},
+					&cli.StringFlag{
 						Name:        "output",
 						Usage:       "Output format - supports json, table, csv",
 						DefaultText: "table",
